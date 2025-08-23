@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 **Broky** is a digital real estate agent (broker digital) that automates tedious tasks for property sellers and buyers. It's an intelligent WhatsApp-based assistant that:
+
 - Captures property information through natural conversation
 - Generates printable documents for property listings
 - Manages interested buyers automatically
@@ -14,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture Overview
 
 ### Technology Stack
+
 - **Backend Framework**: FastAPI (Python)
 - **Database**: MongoDB (planned)
 - **Messaging Platform**: Infobip (WhatsApp Business API)
@@ -21,6 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Server**: Uvicorn ASGI server
 
 ### System Flow
+
 1. **User Interaction**: Users interact via WhatsApp through Infobip
 2. **User Classification**: System identifies if user is seller (registered) or buyer (new)
 3. **Message Processing**:
@@ -34,6 +37,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 8. **Message Delivery**: Response sent back via Infobip
 
 ### Project Structure
+
 ```
 src/app/
 ├── main.py          # FastAPI application entry point
@@ -47,6 +51,7 @@ src/app/
 ## Development Commands
 
 ### Setup Environment
+
 ```bash
 # Install dependencies
 pip install -r requirements.txt
@@ -57,6 +62,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 ### Run Development Server
+
 ```bash
 # Option 1: Using run_server.py (with auto-reload)
 python run_server.py
@@ -69,14 +75,18 @@ python src/app/main.py
 ```
 
 ### API Documentation
+
 Once running, access:
+
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
 ## MongoDB Setup
+
 MongoDB Atlas is configured and ready to use. Connection is handled through `src/app/core/database.py`
 
 ### Quick MongoDB Usage
+
 ```python
 from src.app.core.database import get_db
 
@@ -92,7 +102,9 @@ docs = collection.find({"status": "active"})
 ```
 
 ## Environment Variables
+
 Copy `.env.example` to `.env` and configure:
+
 ```
 MONGODB_URI=your_mongodb_connection_string_here
 DATABASE_NAME=broky_db
@@ -102,6 +114,7 @@ ENVIRONMENT=development
 ## MongoDB Access
 
 ### Terminal Commands
+
 ```bash
 # Test connection
 python test_mongo.py
@@ -118,15 +131,9 @@ python scripts/mongo_query.py insert -c [collection] -d '{"key": "value"}'
 ```
 
 ### Python Usage
+
 ```python
 from src.app.core.database import get_db
 db = get_db()
 collection = db['collection_name']
 ```
-
-## Next Implementation Steps
-1. Set up Infobip webhook endpoint in `api/` directory
-2. Create Whisper integration service
-3. Build message processing pipeline
-4. Implement AI agent logic for different intents
-5. Add conversation state management
