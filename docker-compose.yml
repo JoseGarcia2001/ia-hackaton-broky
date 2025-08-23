@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: broky-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - broky-network
+
+  api:
+    build: .
+    container_name: broky-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - MONGODB_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/${DATABASE_NAME}?authSource=admin
+      - DATABASE_NAME=broky_db
+      - ENVIRONMENT=development
+      - INFOBIP_API_KEY=${INFOBIP_API_KEY}
+      - INFOBIP_BASE_URL=${INFOBIP_BASE_URL}
+      - INFOBIP_WHATSAPP_FROM=${INFOBIP_WHATSAPP_FROM}
+    depends_on:
+      - mongo
+    networks:
+      - broky-network
+    command: uvicorn src.app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  mongo_data:
+
+networks:
+  broky-network:
+    driver: bridge
