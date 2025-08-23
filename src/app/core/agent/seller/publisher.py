@@ -6,8 +6,7 @@ Defines the PublisherAgent class, which is responsible for registering the avail
 - Offer to publish the property on the platforms*.
 """
 
-from langsmith.schemas import Prompt
-from app.core.agent.main import Agent
+from src.app.core.agent.main import Agent
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
@@ -19,50 +18,45 @@ class PublisherAgent(Agent):
             model="openai:gpt-4o",
             # TODO: Implement the tools for the agenda agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de gestionar la agenda disponible del vendedor para programar visitas."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de gestionar la agenda disponible del vendedor para programar visitas.",
+            name="AgendaAgent"
         )
         
         property_card_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the property card agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de crear fichas detalladas de propiedades con toda la información relevante."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de crear fichas detalladas de propiedades con toda la información relevante.",
+            name="PropertyCardAgent"
         )
         
         appraisal_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the appraisal agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de realizar avalúos de propiedades basado en características del mercado."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de realizar avalúos de propiedades basado en características del mercado.",
+            name="AppraisalAgent"
         )
         
         publishing_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the publishing agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de publicar propiedades en diferentes plataformas digitales."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de publicar propiedades en diferentes plataformas digitales.",
+            name="PublishingAgent"
         )
         
         qa_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the qa agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de responder las dudas del usuario sobre gestión de agenda, fichas de propiedades, avalúos y publicación."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de responder las dudas del usuario sobre gestión de agenda, fichas de propiedades, avalúos y publicación.",
+            name="QAAgent"
         )
         
         return [agenda_agent, property_card_agent, appraisal_agent, publishing_agent, qa_agent]

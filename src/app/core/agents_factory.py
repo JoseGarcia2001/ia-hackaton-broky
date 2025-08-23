@@ -1,8 +1,8 @@
-from app.core.agent.main import Agent
-from app.core.agent.seller.register import RegisterAgent
-from app.core.agent.seller.publisher import PublisherAgent
-from app.core.agent.seller.visits import VisitsAgent
-from app.core.agent.buyer.scheduler import SchedulerAgent
+from src.app.core.agent.main import Agent
+from src.app.core.agent.seller.register import RegisterAgent
+from src.app.core.agent.seller.publisher import PublisherAgent
+from src.app.core.agent.seller.visits import VisitsAgent
+from src.app.core.agent.buyer.scheduler import SchedulerAgent
 
 
 class AgentsFactory:

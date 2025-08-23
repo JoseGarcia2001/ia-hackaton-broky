@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from .services.infobip_service import InfobipService
-from .services.chat_service import process_chat_message
+from .services.chat_service import process_chat_message, save_agent_response
 
 
 app = FastAPI(
@@ -48,6 +48,7 @@ async def infobip_webhook(webhook_data: dict):
     user_type = chat_data["user_type"]
     latest_message = chat_data["latest_message"]
     conversation_history = chat_data["conversation_history"]
+    chat_id = chat_data["chat_id"]
 
     print(f"User type: {user_type}")    
     print(f"Latest message {latest_message}")
@@ -68,6 +69,9 @@ async def infobip_webhook(webhook_data: dict):
         "type": "text"
     }
     infobip_service.send_message(message_data.get("from"), agent_response)
+    
+    # Save agent response to chat history
+    save_agent_response(chat_id, agent_response["message"])
 
     return MessageResponse(
         message=agent_response.get("message"),
