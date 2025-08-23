@@ -14,6 +14,7 @@ from langgraph.prebuilt import create_react_agent
 
 
 class RegisterAgent(Agent):
+    
     def get_agents(self) -> list[CompiledStateGraph]:
         seller_registration_agent = create_react_agent(
             model="openai:gpt-4o",
