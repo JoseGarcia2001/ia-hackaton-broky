@@ -7,6 +7,24 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "API is running"}
+
+# MongoDB test endpoint
+@app.get("/test-mongo")
+async def test_mongo():
+    try:
+        from .core.database import test_connection
+        success = test_connection()
+        if success:
+            return {"status": "success", "message": "MongoDB connected successfully"}
+        else:
+            return {"status": "error", "message": "MongoDB connection failed"}
+    except Exception as e:
+        return {"status": "error", "message": f"MongoDB error: {str(e)}"}
+
 class MessageResponse(BaseModel):
     message: str
     status: str
