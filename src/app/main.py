@@ -64,7 +64,7 @@ async def infobip_webhook(webhook_data: dict):
     # agent_response = agent.process(agent_context)
     # # Send response to Infobip
     agent_response = {
-        "message": "https://heysocialgeek.com/wp-content/uploads/2017/07/Bots-para-ganar-seguidores-likes-o-vistas-en-redes-sociales-1600x900.jpg",
+        "message": "Gracias por tu mensaje, en breve te responderemos",
         "type": "text"
     }
     infobip_service.send_message(message_data.get("from"), agent_response)

@@ -1,11 +1,15 @@
+import os
 import requests
 import logging
+import tempfile
 from typing import Dict, Any, Optional
+from urllib.parse import urlparse
 from ..config import settings
 from ..models.whatsapp import (
     WhatsAppResponse,
     WhatsAppError
 )
+from ..utils.openai import OpenIA
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +20,14 @@ class InfobipService:
         self.api_key = settings.INFOBIP_API_KEY
         self.base_url = f"https://{settings.INFOBIP_BASE_URL}"
         self.whatsapp_from = settings.INFOBIP_WHATSAPP_FROM
-        self.mapper_message = {
+        self.mapper_send_message = {
             "text": self.send_text_message,
             "image": self.send_image_message
+        }
+        self.mapper_process_message_type = {
+            "audio": self.process_audio_message,
+            "text": lambda x: x,
+            "image": lambda x: x
         }
         
         if not self.api_key:
@@ -38,7 +47,7 @@ class InfobipService:
         """
         Send a message according to the type of message
         """
-        return self.mapper_message[message.get("type")](to, message.get("message"))
+        return self.mapper_send_message[message.get("type")](to, message.get("message"))
 
     def send_text_message(self, to: str, text: str) -> WhatsAppResponse:
         """
@@ -187,7 +196,7 @@ class InfobipService:
             Dict with processed message information
         """
         try:
-            logger.info(f"Received webhook data: {webhook_data}")
+            print(f"Received webhook data: {webhook_data}")
             # Validate webhook structure according to Infobip documentation
             if not webhook_data.get("results"):
                 logger.warning("Invalid webhook: missing 'results' field")
@@ -273,8 +282,6 @@ class InfobipService:
                 # For TEXT messages, text and cleanText are directly in message_data
                 content = {
                     "text": message_data.get("text", ""),
-                    "clean_text": message_data.get("cleanText", ""),
-                    "keyword": message_data.get("keyword"),
                     "type": "text"
                 }
                 
@@ -288,9 +295,10 @@ class InfobipService:
             elif message_type == "audio":
                 # For AUDIO messages
                 content = {
-                    "url": message_data.get("url", ""),
-                    "type": "audio"
+                    "text": self.process_audio_message(message_data),
+                    "type": "text"
                 }
+
       
             else:
                 logger.warning(f"Unsupported message type: {message_type}")
@@ -305,11 +313,45 @@ class InfobipService:
             logger.error(f"Error extracting content for type {message_type}: {str(e)}")
             return None
 
-    def save_file(self, url: str, path: str) -> str:
+    def _generate_temp_filename(self, url: str) -> str:
         """
-        Save a file from a URL
+        Generate a temporary filename from URL
         """
+        parsed_url = urlparse(url)
+        filename = os.path.basename(parsed_url.path)
+        
+        # If no filename in URL, generate one with extension based on content type
+        if not filename or '.' not in filename:
+            filename = f"temp_file_{hash(url) % 10000}"
+        
+        # Create temp file path
+        temp_dir = tempfile.gettempdir()
+        return os.path.join(temp_dir, filename)
+
+    def save_file(self, url: str, path: str = None) -> str:
+        """
+        Save a file from a URL to specified path or temp directory
+        """
+        if path is None:
+            path = self._generate_temp_filename(url)
+        
         response = requests.get(url, timeout=30.0, headers=self._get_headers())
         with open(path, "wb") as file:
             file.write(response.content)
+        
+        logger.info(f"File saved to: {path}")
         return path
+
+    def process_audio_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process audio message
+        """
+        file_path = self.save_file(message_data.get("url"))
+        openia = OpenIA()
+        return openia.extract_text_audio(file_path)
+    
+    def process_message_type(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process message type
+        """
+        return self.mapper_process_message_type[message_data.get("type")](message_data)

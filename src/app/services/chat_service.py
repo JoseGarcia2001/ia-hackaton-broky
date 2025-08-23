@@ -1,9 +1,8 @@
-from typing import Dict, Any, List
-from app.core.database import get_db
-from app.core.crud.chat_crud import ChatCRUD
-from app.core.crud.user_crud import UserCRUD
-from app.core.crud.message_crud import MessageCRUD
-from app.models.message import Message
+from typing import Dict, Any
+from ..core.database import get_db
+from ..core.crud.chat_crud import ChatCRUD
+from ..core.crud.user_crud import UserCRUD
+from ..core.crud.message_crud import MessageCRUD
 
 
 def process_chat_message(message_data: Dict[str, Any]) -> Dict[str, Any]:
