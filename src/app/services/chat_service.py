@@ -1,4 +1,6 @@
 from typing import Dict, Any, List
+from datetime import datetime
+from app.models.message import MessageSender, MessageType
 from app.core.database import get_db
 from app.core.crud.chat_crud import ChatCRUD
 from app.core.crud.user_crud import UserCRUD
@@ -45,14 +47,23 @@ def process_chat_message(message_data: Dict[str, Any]) -> Dict[str, Any]:
     # Step 3: Store the message
     stored_message = message_crud.add_message(chat.id, message_data)
     
-    # Step 4: Get full conversation history for agent context
-    conversation_history = [msg.content for msg in message_crud.get_messages_by_chat(chat.id)]
+    # Step 4: Get full conversation history for agent context with sender info
+    messages = message_crud.get_messages_by_chat(chat.id)
+    conversation_history = [
+        {
+            "content": msg.content,
+            "sender": msg.sender.value,
+            "type": msg.type.value,
+        }
+        for msg in messages
+    ]
 
     
     return {
         "user_type": user_type,
         "latest_message": stored_message.content,
         "conversation_history": conversation_history,
+        "chat_id": chat.id
     }
 
 
@@ -95,3 +106,52 @@ def get_user_conversation(user_phone: str) -> Dict[str, Any]:
         "conversation_exists": True,
         "message_count": len(messages)
     }
+
+
+def save_agent_response(chat_id: str, agent_response: str) -> Message:
+    """
+    Save the agent's response to the chat
+    
+    Args:
+        chat_id: ID of the chat to save the response to
+        agent_response: The agent's response text
+        
+    Returns:
+        Message: The saved message object
+    """
+    db = get_db()
+    message_crud = MessageCRUD(db)
+    
+    # Create the agent response message data
+    agent_message_data = {
+        "type": "text",
+        "content": {
+            "text": agent_response,
+            "type": "text"
+        }
+    }
+    
+    # Create message document for agent response
+    
+    message_doc = {
+        "chat_id": chat_id,
+        "sender": MessageSender.SYSTEM.value,
+        "type": MessageType.TEXT.value,
+        "content": agent_response,
+        "timestamp": datetime.utcnow()
+    }
+    
+    # Insert into MongoDB
+    result = message_crud.collection.insert_one(message_doc)
+    
+    # Return Message object with generated ID
+    message = Message(
+        id=str(result.inserted_id),
+        chat_id=chat_id,
+        sender=MessageSender.SYSTEM,
+        type=MessageType.TEXT,
+        content=agent_response,
+        timestamp=message_doc["timestamp"]
+    )
+    
+    return message
