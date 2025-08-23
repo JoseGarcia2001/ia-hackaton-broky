@@ -62,7 +62,7 @@ async def root():
 
     # chat.add_message_mongo(agent_response)
 
-    return {"message": agent_response}
+    return {"message": message_data}
 
 if __name__ == "__main__":
     import uvicorn
