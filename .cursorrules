@@ -1,24 +1,15 @@
 # Cursor Rules for Broky Project
 
-## MongoDB Quick Access
-Database connection is ready in `src/app/core/database.py`
-
-### Query from terminal:
+## MongoDB Commands
 ```bash
-# Test connection
-python test_mongo.py
-
-# Query collection
-python scripts/mongo_query.py query -c [collection] -f '[filter]'
-
-# List collections
-python scripts/mongo_query.py list
-
-# Insert document
-python scripts/mongo_query.py insert -c [collection] -d '[document]'
+python test_mongo.py                                    # Test connection
+python scripts/mongo_query.py list                      # List collections
+python scripts/mongo_query.py query -c users            # Query all
+python scripts/mongo_query.py query -c users -f '{}'    # Query with filter
+python scripts/mongo_query.py insert -c users -d '{}'   # Insert document
 ```
 
-### Use in Python:
+## Database Usage
 ```python
 from src.app.core.database import get_db
 db = get_db()
@@ -26,13 +17,8 @@ collection = db['collection_name']
 ```
 
 ## Project Context
-Broky is a WhatsApp-based real estate assistant using:
-- FastAPI for backend
-- MongoDB for data storage
-- Infobip for WhatsApp messaging (to be implemented)
-- Whisper for audio transcription (to be implemented)
+Broky: WhatsApp real estate assistant (FastAPI + MongoDB + Infobip + Whisper)
 
 ## Important
-- MongoDB connection string is in `.env` file
-- Don't commit `.env` file
-- Test database connection before starting work
+- Connection string in `.env`
+- Test DB before starting: `python test_mongo.py`

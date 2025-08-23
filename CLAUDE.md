@@ -99,34 +99,29 @@ DATABASE_NAME=broky_db
 ENVIRONMENT=development
 ```
 
-## MongoDB Quick Access
+## MongoDB Access
 
-### Test Connection
+### Terminal Commands
 ```bash
+# Test connection
 python test_mongo.py
-```
 
-### Query Database from Terminal
-```bash
-# List all collections
+# List collections
 python scripts/mongo_query.py list
 
 # Query documents
-python scripts/mongo_query.py query -c test
-python scripts/mongo_query.py query -c users -f '{"user_type": "seller"}'
+python scripts/mongo_query.py query -c [collection]
+python scripts/mongo_query.py query -c [collection] -f '{"field": "value"}'
 
 # Insert document
-python scripts/mongo_query.py insert -c test -d '{"name": "test", "value": 123}'
-
-# Direct MongoDB Shell (if mongosh installed)
-./scripts/mongo_shell.sh
+python scripts/mongo_query.py insert -c [collection] -d '{"key": "value"}'
 ```
 
-### MongoDB Connection String
-Database is already configured in `.env` file. Use the helper functions in `src/app/core/database.py`:
+### Python Usage
 ```python
 from src.app.core.database import get_db
 db = get_db()
+collection = db['collection_name']
 ```
 
 ## Next Implementation Steps
