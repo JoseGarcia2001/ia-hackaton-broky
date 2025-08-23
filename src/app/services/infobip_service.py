@@ -16,6 +16,10 @@ class InfobipService:
         self.api_key = settings.INFOBIP_API_KEY
         self.base_url = f"https://{settings.INFOBIP_BASE_URL}"
         self.whatsapp_from = settings.INFOBIP_WHATSAPP_FROM
+        self.mapper_message = {
+            "text": self.send_text_message,
+            "image": self.send_image_message
+        }
         
         if not self.api_key:
             raise ValueError("INFOBIP_API_KEY is not configured")
@@ -29,7 +33,13 @@ class InfobipService:
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-    
+
+    def send_message(self, to: str, message: Dict[str, Any]) -> WhatsAppResponse:
+        """
+        Send a message according to the type of message
+        """
+        return self.mapper_message[message.get("type")](to, message.get("message"))
+
     def send_text_message(self, to: str, text: str) -> WhatsAppResponse:
         """
         Send a text message via WhatsApp
@@ -56,7 +66,6 @@ class InfobipService:
                 json=message_data,
                 timeout=30.0
             )
-
             if response.status_code == 200:
                 return WhatsAppResponse(**response.json())
             else:
@@ -71,11 +80,53 @@ class InfobipService:
             logger.error(f"Error in send_text_message: {str(e)}")
             raise
     
+    def send_image_message(self, to: str, image_url: str) -> WhatsAppResponse:
+        """
+        Send an image message via WhatsApp
+        
+        Args:
+            to: Recipient phone number
+            image_url: URL of the image to send (must be publicly accessible)
+            caption: Optional caption text for the image
+            
+        Returns:
+            WhatsAppResponse with API response
+        """
+        try:
+            message_data = {
+                "from": self.whatsapp_from,
+                "to": to,
+                "content": {
+                    "mediaUrl": image_url,
+                }
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/whatsapp/1/message/image",
+                headers=self._get_headers(),
+                json=message_data,
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                return WhatsAppResponse(**response.json())
+            else:
+                try:
+                    error_data = response.json()
+                except:
+                    error_data = {"error": f"HTTP {response.status_code}: {response.text}"}
+                logger.error(f"Error sending image: {error_data}")
+                raise WhatsAppError(**error_data)
+                
+        except Exception as e:
+            logger.error(f"Error in send_image_message: {str(e)}")
+            raise
+    
     def send_template_message(
         self, 
         to: str, 
         template_name: str, 
-        language: str = "en",
+        language: str = "es",
         template_data: Optional[Dict[str, Any]] = None
     ) -> WhatsAppResponse:
         """
@@ -123,6 +174,7 @@ class InfobipService:
         except Exception as e:
             logger.error(f"Error in send_template_message: {str(e)}")
             raise
+
     
     def receive_webhook_message(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         """
