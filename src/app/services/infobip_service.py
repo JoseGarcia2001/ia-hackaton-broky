@@ -244,65 +244,6 @@ class InfobipService:
                     "type": "audio"
                 }
                 
-            elif message_type == "video":
-                # For VIDEO messages
-                video_data = message_data.get("video", {})
-                content = {
-                    "url": video_data.get("url", ""),
-                    "caption": video_data.get("caption", ""),
-                    "mime_type": video_data.get("mimeType", ""),
-                    "type": "video"
-                }
-                
-            elif message_type == "document":
-                # For DOCUMENT messages
-                document_data = message_data.get("document", {})
-                content = {
-                    "url": document_data.get("url", ""),
-                    "filename": document_data.get("filename", ""),
-                    "caption": document_data.get("caption", ""),
-                    "mime_type": document_data.get("mimeType", ""),
-                    "type": "document"
-                }
-                
-            elif message_type == "location":
-                # For LOCATION messages
-                location_data = message_data.get("location", {})
-                content = {
-                    "latitude": location_data.get("latitude"),
-                    "longitude": location_data.get("longitude"),
-                    "name": location_data.get("name", ""),
-                    "address": location_data.get("address", ""),
-                    "type": "location"
-                }
-                
-            elif message_type == "contact":
-                # For CONTACT messages
-                contact_data = message_data.get("contact", {})
-                content = {
-                    "contacts": contact_data,
-                    "type": "contact"
-                }
-                
-            elif message_type == "button_reply":
-                # For BUTTON_REPLY messages
-                button_data = message_data.get("buttonReply", {})
-                content = {
-                    "button_id": button_data.get("id", ""),
-                    "title": button_data.get("title", ""),
-                    "type": "button_reply"
-                }
-                
-            elif message_type == "list_reply":
-                # For LIST_REPLY messages
-                list_data = message_data.get("listReply", {})
-                content = {
-                    "list_id": list_data.get("id", ""),
-                    "title": list_data.get("title", ""),
-                    "description": list_data.get("description", ""),
-                    "type": "list_reply"
-                }
-                
             else:
                 logger.warning(f"Unsupported message type: {message_type}")
                 content = {
