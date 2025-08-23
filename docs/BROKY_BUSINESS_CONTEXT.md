@@ -9,6 +9,7 @@ Broky es un agente inmobiliario digital que transforma la experiencia de vender 
 ## 🏠 Cómo Funciona
 
 ### Para el Vendedor/Arrendador:
+
 1. **Conversación Inicial**: Broky extrae información del inmueble mediante preguntas naturales + solicita fotos
 2. **Avalúo Inmediato**: Genera automáticamente:
    - Valor comercial estimado del inmueble
@@ -22,6 +23,7 @@ Broky es un agente inmobiliario digital que transforma la experiencia de vender 
 4. **Gestión de Interesados**: Broky atiende a TODOS los contactos del QR, califica perfiles y notifica al propietario
 
 ### Para el Comprador/Arrendatario:
+
 1. **Contacto Directo**: Escanea QR del afiche → llega directo a Broky en WhatsApp
 2. **Atención 24/7**: Broky responde dudas, envía información adicional, fotos, videos
 3. **Calificación**: Broky evalúa el perfil del interesado según criterios del propietario
@@ -30,6 +32,7 @@ Broky es un agente inmobiliario digital que transforma la experiencia de vender 
 ## 🔄 Flujo Específico del MVP
 
 ### Fase 1: Captura de Información
+
 ```
 Propietario → "Quiero arrendar/vender mi apartamento"
 Broky → Extrae información básica conversacionalmente:
@@ -44,16 +47,18 @@ Broky → Extrae información básica conversacionalmente:
 ```
 
 ### Fase 2: Avalúo y Sugerencias
+
 ```
 Broky analiza con metodología de comparables usando portales:
 • Valor comercial estimado
-• Rango de precios del sector  
+• Rango de precios del sector
 • Sugerencia de precio de arriendo
 • Recomendaciones financieras
 • Proyección de tiempo en mercado
 ```
 
 ### Fase 3: Generación de Materiales
+
 ```
 Broky entrega:
 • Afiche PDF listo para imprimir (con QR único)
@@ -63,6 +68,7 @@ Broky entrega:
 ```
 
 ### Fase 4: Gestión de Interesados
+
 ```
 Cada persona que escanea el QR:
 • Llega a conversación con Broky
@@ -76,6 +82,7 @@ Cada persona que escanea el QR:
 ## 💰 Modelo de Negocio
 
 ### Estrategia Inicial: Freemium
+
 - **Servicio Core Gratuito**: Avalúo + afiche + gestión básica de interesados
 - **Revenue Streams**:
   - Servicios premium por fracción del costo tradicional
@@ -87,12 +94,14 @@ Cada persona que escanea el QR:
   - Data insights del mercado
 
 ### Comparación con Mercado Tradicional (Bogotá):
+
 - **Broker tradicional**: 3-4% venta, 8-12% administración arriendo
 - **Broky**: Fracción de estos costos con mayor eficiencia
 
 ## 🎯 Propuesta de Valor
 
 ### Lo que resuelve Broky:
+
 1. **Elimina fricción**: No salir de WhatsApp para todo el proceso
 2. **Mantiene tradición**: El afiche en ventana sigue siendo protagonista
 3. **Escala infinitamente**: Un propietario puede gestionar cientos de interesados
@@ -104,19 +113,22 @@ Cada persona que escanea el QR:
 ## 🚀 Alcance del MVP
 
 ### Geográfico:
+
 - **Ciudad piloto**: Bogotá, Colombia
 - **Escalamiento**: Expandir a Colombia completo
 
 ### Tipos de Propiedad:
+
 - Casas
-- Apartamentos  
-- Locales comerciales
+- Apartamentos
 
 ### Operaciones:
+
 - Venta
 - Arriendo
 
 ### Metodología de Avalúo:
+
 - Comparables basados en portales confiables del sector
 - Análisis de ubicación, características y precios de mercado
 - Sugerencias contextualizadas por zona
@@ -144,7 +156,7 @@ Propietario: "Sí, perfecto"
 
 Broky: "Excelente! Te estoy enviando:
 • Afiche PDF para imprimir y poner en tu ventana
-• Ficha técnica del apartamento  
+• Ficha técnica del apartamento
 • Creativos para que publiques en tus redes
 
 En cuanto alguien escanee el QR del afiche, yo me encargo de todo. Te voy notificando cada interesado para que decidas a quién mostrarle el apartamento."
@@ -159,22 +171,4 @@ En cuanto alguien escanee el QR del afiche, yo me encargo de todo. Te voy notifi
 5. **Calificación Inteligente**: Solo perfiles relevantes
 6. **Modelo Freemium**: Valor inmediato sin costo inicial
 
----
-
-## 📍 Contexto Técnico
-
-### Stack Tecnológico:
-- **Mensajería**: Infobip (WhatsApp Business API)
-- **Backend**: FastAPI + MongoDB
-- **IA**: GPT-4 para conversaciones + Whisper para audio
-- **Análisis**: Comparables automáticos con portales inmobiliarios
-
-### Capacidades Core:
-- Procesamiento de lenguaje natural en español
-- Análisis de imágenes para características de propiedades
-- Generación automática de documentos (afiches, fichas)
-- Integración con portales para avalúos en tiempo real
-
----
-
-*Broky: "Lo mejor de la intermediación, sin intermediarios"* 🏠
+_Broky: "Lo mejor de la intermediación, sin intermediarios"_ 🏠
