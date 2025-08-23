@@ -1,4 +1,4 @@
-import httpx
+import requests
 import logging
 from typing import Dict, Any, Optional
 from ..config import settings
@@ -30,7 +30,7 @@ class InfobipService:
             "Accept": "application/json"
         }
     
-    async def send_text_message(self, to: str, text: str) -> WhatsAppResponse:
+    def send_text_message(self, to: str, text: str) -> WhatsAppResponse:
         """
         Send a text message via WhatsApp
         
@@ -41,6 +41,7 @@ class InfobipService:
         Returns:
             WhatsAppResponse with API response
         """
+        print(to, text)
         try:
             message_data = {
                 "messages": [
@@ -53,27 +54,28 @@ class InfobipService:
                     }
                 ]
             }
+
+            print(message_data)
             
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self.base_url}/whatsapp/1/message",
-                    headers=self._get_headers(),
-                    json=message_data,
-                    timeout=30.0
-                )
+            response = requests.post(
+                f"{self.base_url}/whatsapp/1/message/text",
+                headers=self._get_headers(),
+                json=message_data,
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                return WhatsAppResponse(**response.json())
+            else:
+                error_data = response.json()
+                logger.error(f"Error sending message: {error_data}")
+                raise WhatsAppError(**error_data)
                 
-                if response.status_code == 200:
-                    return WhatsAppResponse(**response.json())
-                else:
-                    error_data = response.json()
-                    logger.error(f"Error sending message: {error_data}")
-                    raise WhatsAppError(**error_data)
-                    
         except Exception as e:
             logger.error(f"Error in send_text_message: {str(e)}")
             raise
     
-    async def send_template_message(
+    def send_template_message(
         self, 
         to: str, 
         template_name: str, 
@@ -109,21 +111,20 @@ class InfobipService:
             if template_data:
                 message_data["messages"][0]["content"]["templateData"] = template_data
             
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self.base_url}/whatsapp/1/message",
-                    headers=self._get_headers(),
-                    json=message_data,
-                    timeout=30.0
-                )
+            response = requests.post(
+                f"{self.base_url}/whatsapp/1/message",
+                headers=self._get_headers(),
+                json=message_data,
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                return WhatsAppResponse(**response.json())
+            else:
+                error_data = response.json()
+                logger.error(f"Error sending template: {error_data}")
+                raise WhatsAppError(**error_data)
                 
-                if response.status_code == 200:
-                    return WhatsAppResponse(**response.json())
-                else:
-                    error_data = response.json()
-                    logger.error(f"Error sending template: {error_data}")
-                    raise WhatsAppError(**error_data)
-                    
         except Exception as e:
             logger.error(f"Error in send_template_message: {str(e)}")
             raise

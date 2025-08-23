@@ -39,7 +39,6 @@ async def infobip_webhook(webhook_data: dict):
     infobip_service = InfobipService()
     # Receive message from Infobip
     message_data = infobip_service.receive_webhook_message(webhook_data)
-    print(message_data)
     # # Create chat
     # chat = Chat()
     # # Get user type
@@ -54,6 +53,7 @@ async def infobip_webhook(webhook_data: dict):
     # agent_response = agent.process(processed_message_type)
     # # Send response to Infobip
     agent_response = "Hola, ¿cómo estás?"
+    print(agent_response)
     infobip_service.send_text_message(message_data.get("from"), agent_response)
 
     # chat.add_message_mongo(agent_response)
