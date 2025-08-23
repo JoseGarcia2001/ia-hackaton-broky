@@ -23,11 +23,24 @@ class WhatsAppTemplateRequest(BaseModel):
     messages: List[WhatsAppTemplateMessage]
 
 # Response models
-class WhatsAppResponse(BaseModel):
-    """Model for sending response"""
-    messages: List[Dict[str, str]]
-    bulk_id: Optional[str] = None
+class MessageStatus(BaseModel):
+    """Model for message status"""
+    groupId: int
+    groupName: str
+    id: int
+    name: str
+    description: str
 
-class WhatsAppError(BaseModel):
-    """Model for WhatsApp errors"""
-    requestError: Dict[str, Any]
+class WhatsAppResponse(BaseModel):
+    """Model for sending response from Infobip"""
+    to: str = Field(..., description="Recipient phone number")
+    messageCount: int = Field(..., description="Number of messages sent")
+    messageId: str = Field(..., description="Unique message identifier")
+    status: MessageStatus = Field(..., description="Message status information")
+
+class WhatsAppError(Exception):
+    """Exception for WhatsApp errors"""
+    def __init__(self, **kwargs):
+        self.request_error = kwargs.get('requestError', kwargs)
+        error_message = f"WhatsApp API Error: {self.request_error}"
+        super().__init__(error_message)

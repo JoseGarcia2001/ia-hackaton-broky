@@ -7,6 +7,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Add src directory to PYTHONPATH
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
 EXPOSE 8000
 
 CMD ["sh", "-c", "uvicorn src.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
