@@ -48,9 +48,8 @@ async def infobip_webhook(webhook_data: dict):
     # recibir mensaje de infobip este es el webhook
     infobip_service = InfobipService()
     # Receive message from Infobip
-    print(webhook_data)
     message_data = infobip_service.receive_webhook_message(webhook_data)
-
+    print(message_data)
     # # Create chat
     # chat = Chat()
     # # Get user type
