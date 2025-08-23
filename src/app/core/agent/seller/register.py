@@ -11,7 +11,7 @@ from app.core.agent.main import Agent
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
-
+from app.core.tools.image_filtering import filter_image
 
 class RegisterAgent(Agent):
     
@@ -39,7 +39,7 @@ class RegisterAgent(Agent):
         image_processing_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the image processing agent
-            tools=[],
+            tools=[filter_image],
             prompt=Prompt(
                 # TODO: Iterate over the prompt
                 content="Eres un agente que se encarga de solicitar, recibir y procesar las imágenes de la propiedad."

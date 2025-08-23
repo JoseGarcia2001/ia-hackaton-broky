@@ -1,5 +1,13 @@
 import requests
 import logging
+<<<<<<< Updated upstream
+=======
+import httpx
+import uuid
+import os
+from pathlib import Path
+from urllib.parse import urlparse
+>>>>>>> Stashed changes
 from typing import Dict, Any, Optional
 from ..config import settings
 from ..models.whatsapp import (
@@ -257,7 +265,169 @@ class InfobipService:
         """
         Save a file from a URL
         """
-        response = requests.get(url, timeout=30.0, headers=self._get_headers())
-        with open(path, "wb") as file:
-            file.write(response.content)
-        return path
+        supported_types = [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "document",
+            "location",
+            "contact",
+            "button_reply",
+            "list_reply",
+            "order",
+            "sticker",
+        ]
+        return message_type.lower() in supported_types
+
+    async def download_file_content(self, file_url: str) -> bytes:
+        """
+        Download file content from Infobip URL
+        
+        Args:
+            file_url: URL of the file to download from Infobip
+            
+        Returns:
+            bytes: File content
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    file_url,
+                    headers={"Authorization": f"App {self.api_key}"},
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                return response.content
+        except Exception as e: # pylint: disable=broad-exception-caught
+            logger.error(f"Error downloading file from {file_url}: {str(e)}")
+            raise
+
+    def _get_file_extension(self, mime_type: str, content_type: str) -> str:
+        """
+        Determine file extension based on mime_type or content type
+        
+        Args:
+            mime_type: MIME type from message content
+            content_type: Content type (audio, image, etc.)
+            
+        Returns:
+            str: File extension with dot (e.g., '.jpg', '.mp3')
+        """
+        # Mapping of mime types to extensions
+        mime_extensions = {
+            'image/jpeg': '.jpg',
+            'image/jpg': '.jpg', 
+            'image/png': '.png',
+            'image/gif': '.gif',
+            'image/webp': '.webp',
+            'image/bmp': '.bmp',
+            'image/tiff': '.tiff',
+            'audio/mpeg': '.mp3',
+            'audio/mp3': '.mp3',
+            'audio/mp4': '.mp4',
+            'audio/ogg': '.ogg',
+            'audio/wav': '.wav',
+            'audio/webm': '.webm',
+            'audio/aac': '.aac',
+            'video/mp4': '.mp4',
+            'video/mpeg': '.mpeg',
+            'video/webm': '.webm',
+            'video/avi': '.avi',
+            'video/mov': '.mov',
+            
+            # Documents
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+        }
+        
+        # Try to get extension from mime_type first
+        if mime_type and mime_type in mime_extensions:
+            return mime_extensions[mime_type]
+            
+        # Fallback to content type defaults
+        if content_type == 'image':
+            return '.jpg'  # Default image extension
+        elif content_type == 'audio':
+            return '.mp3'  # Default audio extension  
+        elif content_type == 'video':
+            return '.mp4'  # Default video extension
+        else:
+            return '.bin'  # Generic binary extension
+
+    async def save_file(self, url: str, mime_type: str = "", content_type: str = "") -> str:
+        """
+        Download and save file from Infobip URL with unique name
+        
+        Args:
+            url: URL of the file to download
+            mime_type: MIME type of the file
+            content_type: Type of content (audio, image, etc.)
+            
+        Returns:
+            str: Complete path to saved file
+        """
+        try:
+            unique_id = str(uuid.uuid4())
+            file_extension = self._get_file_extension(mime_type, content_type)
+            filename = f"{unique_id}{file_extension}"
+            metadata_dir = Path("src/app/resources/metadata")
+            metadata_dir.mkdir(parents=True, exist_ok=True)
+            file_path = metadata_dir / filename
+            file_content = await self.download_file_content(url)
+            with open(file_path, "wb") as f:
+                f.write(file_content)
+            logger.info(f"File saved successfully: {file_path}")
+            return str(file_path)
+            
+        except Exception as e:
+            logger.error(f"Error saving file from {url}: {str(e)}")
+            raise
+
+    def get_message_summary(self, processed_message: Dict[str, Any]) -> str:
+        """
+        Get a human-readable summary of the message
+
+        Args:
+            processed_message: Processed message data
+
+        Returns:
+            String summary of the message
+        """
+        try:
+            message_type = processed_message.get("type", "unknown")
+            content = processed_message.get("content", {})
+            contact_name = processed_message.get("contact", {}).get("name", "Unknown")
+
+            if message_type == "text":
+                text = content.get("text", "")
+                return f"Text from {contact_name}: {text[:50]}{'...' if len(text) > 50 else ''}"
+            elif message_type == "image":
+                caption = content.get("caption", "")
+                return f"Image from {contact_name}{f' with caption: {caption[:30]}...' if caption else ''}"
+            elif message_type == "audio":
+                return f"Audio message from {contact_name}"
+            elif message_type == "video":
+                caption = content.get("caption", "")
+                return f"Video from {contact_name}{f' with caption: {caption[:30]}...' if caption else ''}"
+            elif message_type == "document":
+                filename = content.get("filename", "Unknown file")
+                return f"Document from {contact_name}: {filename}"
+            elif message_type == "location":
+                name = content.get("name", "Unknown location")
+                return f"Location from {contact_name}: {name}"
+            elif message_type == "contact":
+                return f"Contact shared by {contact_name}"
+            elif message_type == "button_reply":
+                title = content.get("title", "")
+                return f"Button reply from {contact_name}: {title}"
+            elif message_type == "list_reply":
+                title = content.get("title", "")
+                return f"List selection from {contact_name}: {title}"
+            else:
+                return f"Unsupported message type from {contact_name}: {message_type}"
+
+        except Exception as e:
+            logger.error(f"Error creating message summary: {str(e)}")
+            return "Error processing message"
