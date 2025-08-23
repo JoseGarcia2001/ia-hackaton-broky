@@ -139,6 +139,7 @@ class InfobipService:
             Dict with processed message information
         """
         try:
+            logger.info(f"Received webhook data: {webhook_data}")
             # Validate webhook structure according to Infobip documentation
             if not webhook_data.get("results"):
                 logger.warning("Invalid webhook: missing 'results' field")
@@ -170,12 +171,10 @@ class InfobipService:
         try:
             # Extract data according to Infobip webhook structure
             message_id = result.get("messageId")
-            from_number = result.get("from")
-            to_number = result.get("to")
+            from_number = result.get("sender")
+            to_number = result.get("destination")
             received_at = result.get("receivedAt")
-            integration_type = result.get("integrationType")
-            message_data = result.get("message", {})
-            contact_data = result.get("contact", {})
+            message_data = result.get("content", [{}])[0]
             
             if not all([message_id, from_number, message_data]):
                 logger.warning(f"Incomplete message data: {result}")
@@ -191,12 +190,8 @@ class InfobipService:
                 "from": from_number,
                 "to": to_number,
                 "received_at": received_at,
-                "integration_type": integration_type,
                 "type": message_type,
                 "content": message_content,
-                "contact": {
-                    "name": contact_data.get("name", "")
-                },
                 "is_valid": message_content is not None
             }
             
