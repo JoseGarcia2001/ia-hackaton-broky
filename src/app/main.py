@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
 from .services.infobip_service import InfobipService
 from .services.chat_service import process_chat_message
@@ -30,16 +30,14 @@ async def test_mongo():
 
 
 @app.get("/")
-async def root_get():
+async def root():
     return {"status": "healthy", "message": "Broky API is running", "version": "1.0.0"}
 
 # Webhook endpoint for Infobip
 @app.post("/webhook")
-async def infobip_webhook(request: Request):
+async def infobip_webhook(webhook_data: dict):
     # recibir mensaje de infobip este es el webhook
     infobip_service = InfobipService()
-    # Get webhook data from request
-    webhook_data = await request.json()
     # Receive message from Infobip
     message_data = infobip_service.receive_webhook_message(webhook_data)
 
@@ -52,9 +50,10 @@ async def infobip_webhook(request: Request):
     conversation_history = chat_data["conversation_history"]
 
     print(f"User type: {user_type}")    
-    print(f"Latest message ID: {latest_message}")
+    print(f"Latest message {latest_message}")
 
     print(f"Conversation: {conversation_history}")
+    
     # # Get agent
     # agent = AgentFactory.get_agent(user_type)
     # # Process message with complete conversation context
