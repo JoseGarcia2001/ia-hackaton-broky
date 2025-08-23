@@ -1,8 +1,8 @@
 import httpx
 import logging
 from typing import Dict, Any, Optional
-from src.app.config import settings
-from src.app.models.whatsapp import (
+from app.config import settings
+from app.models.whatsapp import (
     WhatsAppResponse,
     WhatsAppError
 )
