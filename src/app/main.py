@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from app.services.infobip_service import InfobipService
+from .services.infobip_service import InfobipService
 
 
 app = FastAPI(
@@ -40,10 +40,15 @@ async def hello_world():
 
 @app.get("/")
 async def root():
-    # recibir mensaje de infobip este es el webhhok
+    return {"status": "healthy", "message": "Broky API is running", "version": "1.0.0"}
+
+# Webhook endpoint for Infobip
+@app.post("/webhook")
+async def infobip_webhook(webhook_data: dict):
+    # recibir mensaje de infobip este es el webhook
     infobip_service = InfobipService()
     # Receive message from Infobip
-    message_data = infobip_service.receive_webhook_message()
+    message_data = infobip_service.receive_webhook_message(webhook_data)
 
     # # Create chat
     # chat = Chat()
