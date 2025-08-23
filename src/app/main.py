@@ -9,10 +9,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "message": "API is running"}
+class MessageResponse(BaseModel):
+    message: str
+    status: str
+
 
 # MongoDB test endpoint
 @app.get("/test-mongo")
@@ -27,16 +27,6 @@ async def test_mongo():
     except Exception as e:
         return {"status": "error", "message": f"MongoDB error: {str(e)}"}
 
-class MessageResponse(BaseModel):
-    message: str
-    status: str
-
-@app.post("/main", response_model=MessageResponse)
-async def hello_world():
-    return MessageResponse(
-        message="Hello World from FastAPI!",
-        status="success"
-    )
 
 @app.get("/")
 async def root():
@@ -63,11 +53,15 @@ async def infobip_webhook(webhook_data: dict):
     # # Process message
     # agent_response = agent.process(processed_message_type)
     # # Send response to Infobip
-    # infobip_service.send_response(agent_response)
+    agent_response = "Hola, ¿cómo estás?"
+    infobip_service.send_text_message(message_data.get("from"), agent_response)
 
     # chat.add_message_mongo(agent_response)
 
-    return {"message": message_data}
+    return MessageResponse(
+        message=agent_response,
+        status="success"
+    )
 
 if __name__ == "__main__":
     import uvicorn

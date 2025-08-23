@@ -232,8 +232,6 @@ class InfobipService:
                 # For IMAGE messages
                 content = {
                     "url": message_data.get("url", ""),
-                    "caption": message_data.get("caption", ""),
-                    "mime_type": message_data.get("mimeType", ""),
                     "type": "image"
                 }
                 
@@ -241,7 +239,6 @@ class InfobipService:
                 # For AUDIO messages
                 content = {
                     "url": message_data.get("url", ""),
-                    "mime_type": message_data.get("mimeType", ""),
                     "type": "audio"
                 }
       
