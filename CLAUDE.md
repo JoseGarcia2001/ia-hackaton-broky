@@ -111,6 +111,36 @@ DATABASE_NAME=broky_db
 ENVIRONMENT=development
 ```
 
+## Railway Deployment
+
+### Quick Deploy Commands
+```bash
+# Login and link project
+railway login
+railway link -p PROJECT_NAME
+
+# Deploy
+railway up
+
+# Set environment variables
+railway variables --set "MONGODB_URI=your_connection_string"
+railway variables --set "DATABASE_NAME=broky_db"
+railway variables --set "ENVIRONMENT=production"
+
+# Check status and get URL
+railway status
+railway domain
+```
+
+### Auto-deploy Setup
+1. Railway Dashboard → Settings → Connect GitHub Repository
+2. Select branch: `main`
+3. Auto-deploy on push enabled
+
+### Files needed for Railway
+- `Dockerfile` (configured for Railway)
+- `railway.json` (optional config)
+
 ## MongoDB Access
 
 ### Terminal Commands
