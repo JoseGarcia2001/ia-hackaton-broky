@@ -5,8 +5,7 @@ Defines the SchedulerAgent class, which is responsible for scheduling visits for
 - Manage cancellation/rescheduling of the visit.
 """
 
-from langsmith.schemas import Prompt
-from app.core.agent.main import Agent
+from src.app.core.agent.main import Agent
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
@@ -18,40 +17,36 @@ class SchedulerAgent(Agent):
             model="openai:gpt-4o",
             # TODO: Implement the tools for the availability agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de consultar la agenda disponible de vendedores y ofrecer las mejores opciones de horarios a compradores."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de consultar la agenda disponible de vendedores y ofrecer las mejores opciones de horarios a compradores.",
+            name="AvailabilityAgent"
         )
         
         booking_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the booking agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de programar visitas de compradores y notificar a los vendedores correspondientes."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de programar visitas de compradores y notificar a los vendedores correspondientes.",
+            name="BookingAgent"
         )
         
         management_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the management agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de gestionar cancelaciones y reprogramaciones de visitas desde la perspectiva del comprador."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de gestionar cancelaciones y reprogramaciones de visitas desde la perspectiva del comprador.",
+            name="ManagementAgent"
         )
         
         qa_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the qa agent
             tools=[],
-            prompt=Prompt(
-                # TODO: Iterate over the prompt
-                content="Eres un agente que se encarga de responder las dudas del comprador sobre programación y gestión de visitas a propiedades."
-            )
+            # TODO: Iterate over the prompt
+            prompt="Eres un agente que se encarga de responder las dudas del comprador sobre programación y gestión de visitas a propiedades.",
+            name="QAAgent"
         )
         
         return [availability_agent, booking_agent, management_agent, qa_agent]
