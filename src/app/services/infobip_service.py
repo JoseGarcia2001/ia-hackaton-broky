@@ -225,6 +225,7 @@ class InfobipService:
             event = result.get("event")
             channel = result.get("channel")
             content_list = result.get("content", [])
+            url = result.get("url")
             
             if not all([message_id, from_number, content_list]):
                 logger.warning(f"Incomplete message data: {result}")
@@ -246,7 +247,8 @@ class InfobipService:
                 "channel": channel,
                 "type": message_type,
                 "content": message_content,
-                "is_valid": message_content is not None
+                "is_valid": message_content is not None,
+                "url": url
             }
             
         except Exception as e:
@@ -302,3 +304,12 @@ class InfobipService:
         except Exception as e:
             logger.error(f"Error extracting content for type {message_type}: {str(e)}")
             return None
+
+    def save_file(self, url: str, path: str) -> str:
+        """
+        Save a file from a URL
+        """
+        response = requests.get(url, timeout=30.0, headers=self._get_headers())
+        with open(path, "wb") as file:
+            file.write(response.content)
+        return path
