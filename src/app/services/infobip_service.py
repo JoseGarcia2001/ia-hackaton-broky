@@ -152,7 +152,7 @@ class InfobipService:
                 if processed_message:
                     processed_messages.append(processed_message)
             
-            return processed_messages[0]
+            return processed_messages[0] if processed_messages else {"valid": False, "error": "No valid messages found"}
             
         except Exception as e:
             logger.error(f"Error processing webhook message: {str(e)}")
@@ -174,12 +174,16 @@ class InfobipService:
             from_number = result.get("sender")
             to_number = result.get("destination")
             received_at = result.get("receivedAt")
-            message_data = result.get("content", [{}])[0]
+            event = result.get("event")
+            channel = result.get("channel")
+            content_list = result.get("content", [])
             
-            if not all([message_id, from_number, message_data]):
+            if not all([message_id, from_number, content_list]):
                 logger.warning(f"Incomplete message data: {result}")
                 return None
             
+            # Get the first content item (Infobip sends array but usually has one item)
+            message_data = content_list[0] if content_list else {}
             message_type = message_data.get("type", "unknown").lower()
             
             # Validate and extract content based on message type
@@ -190,6 +194,8 @@ class InfobipService:
                 "from": from_number,
                 "to": to_number,
                 "received_at": received_at,
+                "event": event,
+                "channel": channel,
                 "type": message_type,
                 "content": message_content,
                 "is_valid": message_content is not None
@@ -214,31 +220,31 @@ class InfobipService:
             content = {}
             
             if message_type == "text":
-                # For TEXT messages, content is directly in the message
+                # For TEXT messages, text and cleanText are directly in message_data
                 content = {
                     "text": message_data.get("text", ""),
+                    "clean_text": message_data.get("cleanText", ""),
+                    "keyword": message_data.get("keyword"),
                     "type": "text"
                 }
                 
             elif message_type == "image":
                 # For IMAGE messages
-                image_data = message_data.get("image", {})
                 content = {
-                    "url": image_data.get("url", ""),
-                    "caption": image_data.get("caption", ""),
-                    "mime_type": image_data.get("mimeType", ""),
+                    "url": message_data.get("url", ""),
+                    "caption": message_data.get("caption", ""),
+                    "mime_type": message_data.get("mimeType", ""),
                     "type": "image"
                 }
                 
             elif message_type == "audio":
                 # For AUDIO messages
-                audio_data = message_data.get("audio", {})
                 content = {
-                    "url": audio_data.get("url", ""),
-                    "mime_type": audio_data.get("mimeType", ""),
+                    "url": message_data.get("url", ""),
+                    "mime_type": message_data.get("mimeType", ""),
                     "type": "audio"
                 }
-                
+      
             else:
                 logger.warning(f"Unsupported message type: {message_type}")
                 content = {
@@ -290,35 +296,35 @@ class InfobipService:
         try:
             message_type = processed_message.get("type", "unknown")
             content = processed_message.get("content", {})
-            contact_name = processed_message.get("contact", {}).get("name", "Unknown")
+            from_number = processed_message.get("from", "Unknown")
             
             if message_type == "text":
                 text = content.get('text', '')
-                return f"Text from {contact_name}: {text[:50]}{'...' if len(text) > 50 else ''}"
+                return f"Text from {from_number}: {text[:50]}{'...' if len(text) > 50 else ''}"
             elif message_type == "image":
                 caption = content.get('caption', '')
-                return f"Image from {contact_name}{f' with caption: {caption[:30]}...' if caption else ''}"
+                return f"Image from {from_number}{f' with caption: {caption[:30]}...' if caption else ''}"
             elif message_type == "audio":
-                return f"Audio message from {contact_name}"
+                return f"Audio message from {from_number}"
             elif message_type == "video":
                 caption = content.get('caption', '')
-                return f"Video from {contact_name}{f' with caption: {caption[:30]}...' if caption else ''}"
+                return f"Video from {from_number}{f' with caption: {caption[:30]}...' if caption else ''}"
             elif message_type == "document":
                 filename = content.get('filename', 'Unknown file')
-                return f"Document from {contact_name}: {filename}"
+                return f"Document from {from_number}: {filename}"
             elif message_type == "location":
                 name = content.get('name', 'Unknown location')
-                return f"Location from {contact_name}: {name}"
+                return f"Location from {from_number}: {name}"
             elif message_type == "contact":
-                return f"Contact shared by {contact_name}"
+                return f"Contact shared by {from_number}"
             elif message_type == "button_reply":
                 title = content.get('title', '')
-                return f"Button reply from {contact_name}: {title}"
+                return f"Button reply from {from_number}: {title}"
             elif message_type == "list_reply":
                 title = content.get('title', '')
-                return f"List selection from {contact_name}: {title}"
+                return f"List selection from {from_number}: {title}"
             else:
-                return f"Unsupported message type from {contact_name}: {message_type}"
+                return f"Unsupported message type from {from_number}: {message_type}"
                 
         except Exception as e:
             logger.error(f"Error creating message summary: {str(e)}")
