@@ -14,7 +14,7 @@ class InfobipService:
     
     def __init__(self):
         self.api_key = settings.INFOBIP_API_KEY
-        self.base_url = settings.INFOBIP_BASE_URL
+        self.base_url = f"https://{settings.INFOBIP_BASE_URL}"
         self.whatsapp_from = settings.INFOBIP_WHATSAPP_FROM
         
         if not self.api_key:
@@ -44,15 +44,11 @@ class InfobipService:
         print(to, text)
         try:
             message_data = {
-                "messages": [
-                    {
-                        "from": self.whatsapp_from,
-                        "to": to,
-                        "content": {
-                            "text": text
-                        }
-                    }
-                ]
+                "from": self.whatsapp_from,
+                "to": to,
+                "content": {
+                    "text": text
+                }
             }
 
             print(message_data)
@@ -63,11 +59,16 @@ class InfobipService:
                 json=message_data,
                 timeout=30.0
             )
+
+            print(response.json())
             
             if response.status_code == 200:
                 return WhatsAppResponse(**response.json())
             else:
-                error_data = response.json()
+                try:
+                    error_data = response.json()
+                except:
+                    error_data = {"error": f"HTTP {response.status_code}: {response.text}"}
                 logger.error(f"Error sending message: {error_data}")
                 raise WhatsAppError(**error_data)
                 
@@ -96,20 +97,16 @@ class InfobipService:
         """
         try:
             message_data = {
-                "messages": [
-                    {
-                        "from": self.whatsapp_from,
-                        "to": to,
-                        "content": {
-                            "templateName": template_name,
-                            "language": language
-                        }
-                    }
-                ]
+                "from": self.whatsapp_from,
+                "to": to,
+                "content": {
+                    "templateName": template_name,
+                    "language": language
+                }
             }
             
             if template_data:
-                message_data["messages"][0]["content"]["templateData"] = template_data
+                message_data["content"]["templateData"] = template_data
             
             response = requests.post(
                 f"{self.base_url}/whatsapp/1/message",
@@ -121,7 +118,10 @@ class InfobipService:
             if response.status_code == 200:
                 return WhatsAppResponse(**response.json())
             else:
-                error_data = response.json()
+                try:
+                    error_data = response.json()
+                except:
+                    error_data = {"error": f"HTTP {response.status_code}: {response.text}"}
                 logger.error(f"Error sending template: {error_data}")
                 raise WhatsAppError(**error_data)
                 
