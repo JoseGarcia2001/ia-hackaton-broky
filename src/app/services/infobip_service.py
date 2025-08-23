@@ -41,7 +41,6 @@ class InfobipService:
         Returns:
             WhatsAppResponse with API response
         """
-        print(to, text)
         try:
             message_data = {
                 "from": self.whatsapp_from,
@@ -51,8 +50,6 @@ class InfobipService:
                 }
             }
 
-            print(message_data)
-            
             response = requests.post(
                 f"{self.base_url}/whatsapp/1/message/text",
                 headers=self._get_headers(),
@@ -60,8 +57,6 @@ class InfobipService:
                 timeout=30.0
             )
 
-            print(response.json())
-            
             if response.status_code == 200:
                 return WhatsAppResponse(**response.json())
             else:
