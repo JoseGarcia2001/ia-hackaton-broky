@@ -7,57 +7,47 @@ Defines the RegisterAgent class, which is responsible for registering sellers in
 """
 
 from src.app.core.agent.main import Agent
-from src.app.core.tools.register import get_user_info, save_property_info, get_remaining_info
+from src.app.core.tools.general import update_business_stage
+from src.app.core.tools.register import get_user_info, save_property_info, get_remaining_info, generate_qr
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
+
+from langchain import hub
 
 
 class RegisterAgent(Agent):
     
     def get_agents(self) -> list[CompiledStateGraph]:
+        prompt = hub.pull("property_registration_agent")
 
         property_registration_agent = create_react_agent(
-            model="openai:gpt-4o",
-            # TODO: Implement the tools for the property registration agent
-            tools=[save_property_info, get_user_info, get_remaining_info],
-            # TODO: Iterate over the prompt
-            prompt=(
-                    "Eres un agente que se encarga de recopilar y registrar la información básica de la propiedad en la base de datos."
-                    " Debes obtener del usuario los siguientes datos: \n"
-                    "- Dirección de la propiedad\n"
-                    "- Tipo de propiedad\n"
-                    "- Precio de la propiedad\n"
-                    "Usar la herramienta apropiada para registrar la información de la propiedad. Puedes realizar actualizaciones parciales de la información de la propiedad.\n"
-                    "Recuerda saludar al usuario si es la primera vez que hablas con él e iniciar el proceso de registro."
-            ),
+            model="openai:gpt-4.1",
+            tools=[save_property_info, get_user_info, get_remaining_info, generate_qr, update_business_stage],
+            prompt=prompt.format(),
             name="PropertyRegistrationAgent"
         )
         
-        qr_generator_agent = create_react_agent(
-            model="openai:gpt-4o",
-            # TODO: Implement the tools for the QR generator agent
-            tools=[],
-            # TODO: Iterate over the prompt
-            prompt="Eres un agente que se encarga de generar el código QR asociado a la propiedad registrada.",
-            name="QRGeneratorAgent"
-        )
-        
-        qa_agent = create_react_agent(
-            model="openai:gpt-4o",
-            # TODO: Implement the tools for the qa agent
-            tools=[],
-            # TODO: Iterate over the prompt
-            prompt="Eres un agente que se encarga de responder las dudas del usuario sobre el proceso de registro de vendedores y propiedades.",
-            name="QAAgent"
-        )
-        
-        return [property_registration_agent, qr_generator_agent, qa_agent]
+        return [property_registration_agent]
 
-    def get_agents_description(self) -> str:
+    def get_flow_description(self) -> str:
         return (
-            "- PropertyRegistrationAgent: Agente especializado en el proceso de registro de la propiedad. Realiza y recopila la información necesaria de la propiedad\n"
-            "- QRGeneratorAgent: Agente especializado en generar códigos QR asociados a las propiedades.\n"
-            "- QAAgent: Agente especializado en responder dudas sobre el proceso de registro y la plataforma.\n"
-            "NOTA: El proceso de registro debe siempre empezar con el PropertyRegistrationAgent."
+            "## FLUJO DE LA ETAPA DE REGISTRO\n"
+            "Esta etapa sigue un flujo secuencial para completar el registro de propiedades:\n"
+            "\n"
+            "### Orden de Ejecución:\n"
+            "1. **PropertyRegistrationAgent**: Recopila la información básica de la propiedad (dirección, tipo, precio) y genera el código QR asociado a la propiedad\n"
+            "\n"
+            "### Notas Importantes:\n"
+            "- Cada agente debe completar su tarea antes de pasar al siguiente\n"
+            "- Si hay errores en la recopilación de información, el PropertyRegistrationAgent debe resolverlos antes de continuar\n"
+            "\n"
+            "## AGENTES DISPONIBLES\n"
+            "\n"
+            "### 1. PropertyRegistrationAgent\n"
+            "**Responsabilidades:**\n"
+            "- Recopilar información básica de la propiedad (dirección, tipo, precio)\n"
+            "- Registrar la información en la base de datos\n"
+            "- Validar que toda la información requerida esté completa\n"
+            "- Manejar actualizaciones parciales de la información\n"
         )

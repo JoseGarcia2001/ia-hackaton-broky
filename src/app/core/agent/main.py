@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from langchain import hub
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain.chat_models import init_chat_model
 
@@ -12,19 +13,31 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 
+class AgentState(AgentStateWithStructuredResponse):
+    """
+    The state of the agent.
+    """
+    chat_id: str = Field(description="ID del chat")
+
+
 class MessageType(str, Enum):
     TEXT = "text"
     IMAGE = "image"
 
 
 class AgentResponse(BaseModel):
-    type: MessageType = Field(description="Tipo de mensaje que se enviará al usuario:\n- text: Cuando va a enviar un mensaje de texto\n- image: Cuando va a enviar una imagen", default=MessageType.TEXT)
+    type: MessageType = Field(
+        description="Tipo de mensaje que se enviará al usuario:\n- text: Cuando va a enviar un mensaje de texto\n- image: Cuando va a enviar una imagen",
+        default=MessageType.TEXT,
+    )
     message: Optional[str] = Field(description="Mensaje que se enviará al usuario o URL de la imagen", default=None)
+
 
 class Agent(ABC):
     """
     Base class for all agents.
     """
+
     @abstractmethod
     def get_agents(self) -> list[CompiledStateGraph]:
         """
@@ -36,58 +49,57 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def get_agents_description(self) -> str:
+    def get_flow_description(self) -> str:
         """
-        Get the description of the agents that will be used to process the user's message.
+        Get the description of the flow that will be used to process the user's message.
 
         Returns:
-            str: The description of the agents that will be used to process the user's message.
+            str: The description of the flow that will be used to process the user's message.
         """
         pass
 
-    def process(self) -> AgentResponse:
+    def process(self, agent_context: dict) -> AgentResponse:
         """
         Processes the user's message
+
+        Args:
+            agent_context: The context of the agent.
 
         Returns:
             str: The agent's response to the user's message.
         """
         agents: list[CompiledStateGraph] = self.get_agents()
-        
+
         model = init_chat_model("openai:gpt-4.1", temperature=0)
-        
+
+        prompt = hub.pull("supervisor")
+        prompt = prompt.format(flow_description=self.get_flow_description())
+
         supervisor: StateGraph = create_supervisor(
             agents=agents,
             model=model,
-            prompt=(
-                "Eres un supervisor inteligente que gestiona los siguientes agentes especializados:\n"
-                + self.get_agents_description()
-                + "\n\nINSTRUCCIONES IMPORTANTES:\n"
-                + "1. Analiza la solicitud del usuario y selecciona EXACTAMENTE UN agente apropiado\n"
-                + "2. Delega completamente la tarea al agente seleccionado\n"
-                + "3. NO respondas directamente al usuario, SIEMPRE deja que el agente responda\n"
-                + "4. NO agregues comentarios adicionales a la respuesta del agente.\n"
-                + "5. Usa emojis y caracteres especiales para hacer la respuesta más atractiva\n"
-                + "6. La respuesta final DEBE ser únicamente el mensaje generado por el agente, el agente no tiene las herramientas para comunicarse con el usuario, eres tu quien debe comunicarte con el usuario\n"
-                + "7. Si el agente no puede completar la tarea, permite que el agente informe esto al usuario\n\n"
-                + "Tu único trabajo es seleccionar y transferir al agente correcto y retornar el mensaje de respuesta del agente al usuario"
-            ),
+            prompt=prompt,
             add_handoff_back_messages=True,
             output_mode="last_message",
             response_format=AgentResponse,
-            state_schema=AgentStateWithStructuredResponse
+            state_schema=AgentState,
         ).compile()
 
-        # TODO: Implement the logic to retrieve messages from the database
-        messages: list[BaseMessage] = [
-            HumanMessage(content="Hola"),
+        # messages: list[BaseMessage] = []
+        # for message in agent_context.get("conversation_history"):
+        #     if message.get("sender") == "user":
+        #         messages.append(HumanMessage(content=message.get("content")))
+        #     elif message.get("sender") == "system":
+        #         messages.append(AIMessage(content=message.get("content")))
+
+        messages = [
+            HumanMessage(content="Hola!"),
+            AIMessage(content="Parece que necesitamos más información para completar el registro de tu inmueble. Necesito saber el tipo de propiedad que estás registrando (por ejemplo, apartamento, casa, local comercial, etc.). ¿Podrías proporcionarme esa información, por favor?"),
+            HumanMessage(content="El tipo de propiedad es un apartamento"),
         ]
 
-        response = supervisor.invoke({"messages": messages}, {"run_name": self.__class__.__name__})
+        response = supervisor.invoke({"messages": messages, "chat_id": agent_context.get("chat_id")}, {"run_name": self.__class__.__name__})
 
-        message_response: AgentResponse = AgentResponse(
-            type=MessageType.TEXT,
-            message=response["messages"][-1].content
-        )
+        message_response: AgentResponse = AgentResponse(type=MessageType.TEXT, message=response["messages"][-1].content)
 
         return message_response
