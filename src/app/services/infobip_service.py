@@ -254,7 +254,7 @@ class InfobipService:
                 "received_at": received_at,
                 "event": event,
                 "channel": channel,
-                "type": message_type,
+                "type": message_content.get("type"),
                 "content": message_content,
                 "is_valid": message_content is not None,
                 "url": url
@@ -313,28 +313,10 @@ class InfobipService:
             logger.error(f"Error extracting content for type {message_type}: {str(e)}")
             return None
 
-    def _generate_temp_filename(self, url: str) -> str:
-        """
-        Generate a temporary filename from URL
-        """
-        parsed_url = urlparse(url)
-        filename = os.path.basename(parsed_url.path)
-        
-        # If no filename in URL, generate one with extension based on content type
-        if not filename or '.' not in filename:
-            filename = f"temp_file_{hash(url) % 10000}"
-        
-        # Create temp file path
-        temp_dir = tempfile.gettempdir()
-        return os.path.join(temp_dir, filename)
-
-    def save_file(self, url: str, path: str = None) -> str:
+    def save_file(self, url: str, path: str) -> str:
         """
         Save a file from a URL to specified path or temp directory
-        """
-        if path is None:
-            path = self._generate_temp_filename(url)
-        
+        """    
         response = requests.get(url, timeout=30.0, headers=self._get_headers())
         with open(path, "wb") as file:
             file.write(response.content)
@@ -346,7 +328,8 @@ class InfobipService:
         """
         Process audio message
         """
-        file_path = self.save_file(message_data.get("url"))
+        temp_file_path = os.path.join(tempfile.gettempdir(), "audio_whatsapp.mp3")
+        file_path = self.save_file(message_data.get("url"), temp_file_path)
         openia = OpenIA()
         return openia.extract_text_audio(file_path)
     
