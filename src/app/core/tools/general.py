@@ -2,20 +2,54 @@
 Defines the tools for the general purposes
 """
 
-from typing import Annotated
+from typing import Annotated, Dict, Any, Optional
 from langchain.tools import tool
-from enum import Enum
 from langgraph.prebuilt import InjectedState
+from ...models.business_stage import SellerStage, BuyerStage
+from ...services.stage_service import StageService
 
 
-class SellerBusinessStage(Enum):
-    REGISTRATION = "regist"
-    PUBLISH = "publish"
-    VISITS = "visits"
+@tool
+def get_business_stage(user_type: str, state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
+    """
+    Get the current business stage for a user (seller or buyer).
+    
+    Args:
+        user_type: Type of user ("seller" or "buyer")
+        state: Injected state containing chat_id
+    
+    Returns:
+        Dictionary with stage information and status
+    """
+    try:
+        chat_id = state.get("chat_id")
+        
+        stage_service = StageService()
+        
+        if user_type.lower() == "seller":
+            stage = stage_service.get_seller_stage(chat_id)
+            return {
+                "success": True,
+                "stage": stage.value 
+            }
 
-
-class BuyerBusinessStage(Enum):
-    SCHEDULE = "schedule"
+        if user_type.lower() == "buyer":
+            stage = stage_service.get_buyer_stage(chat_id)
+            return {
+                "success": True,
+                "stage": stage.value if stage else None
+            }
+        return {
+            "success": False,
+            "stage": None,
+        }
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "stage": None,
+        }
 
 
 @tool
@@ -28,9 +62,45 @@ def save_availability(availability: Annotated[str, "Horario de disponibilidad de
 
 @tool
 def update_business_stage(
-    stage: SellerBusinessStage | BuyerBusinessStage, state: Annotated[dict, InjectedState]
-) -> str:
+    stage: SellerStage | BuyerStage, user_type: str, state: Annotated[dict, InjectedState]
+) -> Dict[str, Any]:
     """
-    Update the business stage of the company.
+    Update the business stage for a user (seller or buyer).
+    
+    Args:
+        stage: New business stage (SellerStage or BuyerStage)
+        user_type: Type of user ("seller" or "buyer")  
+        state: Injected state containing chat_id
+    
+    Returns:
+        Dictionary with update result and stage information
     """
-    return f"Business stage updated to {stage}"
+    try:
+        chat_id = state.get("chat_id")
+        stage_service = StageService()
+        
+        if user_type.lower() == "seller" and isinstance(stage, SellerStage):
+            success = stage_service.update_seller_stage(chat_id, stage)
+            return {
+                "success": success,
+                "stage": stage.value,
+            }
+        
+        if user_type.lower() == "buyer" and isinstance(stage, BuyerStage):
+            success = stage_service.update_buyer_stage(chat_id, stage)
+            return {
+                "success": success,
+                "stage": stage.value,
+            }
+        
+        return {
+            "success": False,
+            "stage": None,
+        }
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "stage": None,
+        }
