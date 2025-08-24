@@ -11,6 +11,7 @@ from langchain import hub
 
 from src.app.core.tools.visits import create_property_card, get_appraisal_info, publish_property    
 from src.app.core.tools.general import save_availability
+from src.app.models.business_stage import SellerStage
 
 
 class VisitsAgent(Agent):
@@ -19,7 +20,7 @@ class VisitsAgent(Agent):
         agenda_management_agent = create_react_agent(
             model="openai:gpt-4.1",
             tools=[save_availability],
-            prompt=prompt.format(),
+            prompt=prompt.format(next_stage="No hay siguiente etapa"),
             name="AgendaManagementAgent",
             state_schema=AgentState
         )

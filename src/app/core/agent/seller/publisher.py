@@ -13,6 +13,7 @@ from langgraph.prebuilt import create_react_agent
 from langchain import hub
 
 from src.app.core.tools.general import save_availability, update_business_stage
+from src.app.models.business_stage import SellerStage
 
 
 class PublisherAgent(Agent):
@@ -21,7 +22,7 @@ class PublisherAgent(Agent):
         agenda_agent = create_react_agent(
             model="openai:gpt-4.1",
             tools=[save_availability, update_business_stage],
-            prompt=prompt.format(),
+            prompt=prompt.format(next_stage=SellerStage.VISITS.value),
             name="AgendaAgent",
             state_schema=AgentState
         )
