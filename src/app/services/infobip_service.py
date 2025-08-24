@@ -153,6 +153,7 @@ class InfobipService:
         """
         try:
             header = {}
+            template_request = {}
             if template_data.get("image"):
                 header = {"type": "IMAGE", "mediaUrl": template_data.get("image")}
 
@@ -160,13 +161,13 @@ class InfobipService:
             if not all(plh for plh in placeholders):
                 raise ValueError("Placeholders not valid and/or empty")
             
-            template_data["body"] = {"placeholders": placeholders}
+            template_request["body"] = {"placeholders": placeholders}
             if header:
-                template_data["header"] = header
+                template_request["header"] = header
 
             if template_data.get("buttons"):
                 buttons = template_data.get("buttons")
-                template_data["buttons"] = buttons
+                template_request["buttons"] = buttons
 
             message_data = {
                 "messages": [
@@ -176,21 +177,18 @@ class InfobipService:
                         "content": {
                             "templateName": template_name,
                             "language": language,
-                            "templateData": template_data
+                            "templateData": template_request
                         }
                     }
                 ]
             }
             
-            if template_data:
-                message_data["messages"][0]["content"]["templateData"] = template_data
             response = requests.post(
                 f"{self.base_url}/whatsapp/1/message/template",
                 headers=self._get_headers(),
                 json=message_data,
                 timeout=30.0
             )
-            print(f"Response: {response.json()}")
             if response.status_code == 200:
                 return WhatsAppTemplateResponse(**response.json())
             else:
