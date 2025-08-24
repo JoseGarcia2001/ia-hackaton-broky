@@ -126,3 +126,36 @@ class ChatCRUD:
         except Exception as e:
             print(f"Error getting chat by id: {e}")
             return None
+    
+    def update_chat(self, chat_id: str, update_data: Dict[str, Any]) -> bool:
+        """
+        Update chat with arbitrary fields
+        
+        Args:
+            chat_id: Chat ID
+            update_data: Dictionary with fields to update
+            
+        Returns:
+            bool: True if updated successfully, False otherwise
+        """
+        try:
+            if not update_data:
+                return False
+            
+            # Filter out None values and prepare update data
+            filtered_update = {k: v for k, v in update_data.items() if v is not None}
+            
+            if not filtered_update:
+                return False
+            
+            # Add updated_at timestamp
+            filtered_update["updated_at"] = datetime.utcnow()
+            
+            result = self.collection.update_one(
+                {"_id": ObjectId(chat_id)},
+                {"$set": filtered_update}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            print(f"Error updating chat: {e}")
+            return False
