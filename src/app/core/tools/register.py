@@ -43,7 +43,7 @@ def get_user_info() -> UserInfo:
 
 
 @tool
-async def save_property_info(info: PropertyInfo, state: Annotated[dict, InjectedState]) -> Optional[Property]:
+def save_property_info(info: PropertyInfo, state: Annotated[dict, InjectedState]) -> Optional[Property]:
     """
     Herramienta útil para guardar la información de la propiedad en la base de datos.
     """
@@ -52,16 +52,16 @@ async def save_property_info(info: PropertyInfo, state: Annotated[dict, Injected
     chat_service = ChatService()
     
     # Get user from chat to use as owner
-    user = await chat_service.get_user_from_chat(chat_id)
+    user = chat_service.get_user_from_chat(chat_id)
     owner_id = user.id
     
-    property_obj = await property_service.create_property(info, owner_id)
+    property_obj = property_service.create_property(info, owner_id)
     
     return property_obj
 
 
 @tool
-async def get_remaining_info(state: Annotated[dict, InjectedState]) -> Optional[PropertyProgress]:
+def get_remaining_info(state: Annotated[dict, InjectedState]) -> Optional[PropertyProgress]:
     """
     Herramienta útil para obtener la información que falta para completar el registro de la propiedad.
     """
@@ -70,13 +70,19 @@ async def get_remaining_info(state: Annotated[dict, InjectedState]) -> Optional[
     
     # Try to get property_id from state first, then from chat service
     chat_service = ChatService()
-    property_id = await chat_service.get_property_id_from_chat(chat_id) 
+    property_id = chat_service.get_property_id_from_chat(chat_id) 
     
     if not property_id:
-        return None
+        # Return progress indicating all PropertyInfo fields are missing
+        return PropertyProgress(
+            property_id="",
+            current_stage="initial",
+            missing_fields=["address", "type", "price"],
+            completion_percentage=0.0
+        )
     
     property_service = PropertyService()
-    return await property_service.get_progress_info(property_id)
+    return property_service.get_progress_info(property_id)
     
 
 

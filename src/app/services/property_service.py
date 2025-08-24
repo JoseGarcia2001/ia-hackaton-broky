@@ -30,7 +30,7 @@ class PropertyService:
         db = get_db()
         self.property_crud = PropertyCRUD(db)
     
-    async def create_property(self, info: PropertyInfo, owner_id: str) -> Optional[Property]:
+    def create_property(self, info: PropertyInfo, owner_id: str) -> Optional[Property]:
         """Create a new property with initial data and return the full property"""
         # Convert PropertyInfo to property data
         property_data = {
@@ -43,16 +43,16 @@ class PropertyService:
         property_id = self.property_crud.create_property(property_data)
         return self.property_crud.get_property_by_id(property_id)
     
-    async def get_property_id_by_address(self, address: str) -> Optional[Property]:
+    def get_property_id_by_address(self, address: str) -> Optional[Property]:
         """Get property by address, returns full property object like create"""
         property_obj = self.property_crud.get_property_by_address(address)
         return property_obj
     
-    async def update_property(self, property_id: str, update_data: Dict[str, Any]) -> bool:
+    def update_property(self, property_id: str, update_data: Dict[str, Any]) -> bool:
         """Update property with partial fields"""
         return self.property_crud.update_property_partial(property_id, update_data)
     
-    async def get_progress_info(self, property_id: str) -> Optional[PropertyProgress]:
+    def get_progress_info(self, property_id: str) -> Optional[PropertyProgress]:
         """Get property progress info with missing fields"""
         progress_data = self.property_crud.get_property_missing_fields(property_id)
         
@@ -66,6 +66,6 @@ class PropertyService:
         
         return None
     
-    async def get_property_full_info(self, property_id: str) -> Optional[Property]:
+    def get_property_full_info(self, property_id: str) -> Optional[Property]:
         """Get complete property information"""
         return self.property_crud.get_property_by_id(property_id)

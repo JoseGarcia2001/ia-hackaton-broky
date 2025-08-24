@@ -55,7 +55,7 @@ def get_business_stage(user_type: str, state: Annotated[dict, InjectedState]) ->
 
 
 @tool
-async def save_availability(availability_slots: Annotated[List[AvailabilitySlot], "List of availability time slots"], state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
+def save_availability(availability_slots: Annotated[List[AvailabilitySlot], "List of availability time slots"], state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
     """
     Herramienta útil para almacenar o actualizar el horario de disponibilidad del vendedor.
     
@@ -76,7 +76,7 @@ async def save_availability(availability_slots: Annotated[List[AvailabilitySlot]
             }
         
         user_service = UserService()
-        success = await user_service.add_availability(chat_id, availability_slots)
+        success = user_service.add_availability(chat_id, availability_slots)
         
         if success:
             return {

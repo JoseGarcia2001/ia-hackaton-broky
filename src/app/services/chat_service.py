@@ -17,7 +17,7 @@ class ChatService:
         self.user_crud = UserCRUD(db)
         self.message_crud = MessageCRUD(db)
     
-    async def process_chat_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
+    def process_chat_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Process chat message through the 5 steps:
         1. Create chat if not existent
@@ -71,7 +71,7 @@ class ChatService:
         }
 
     
-    async def get_user_conversation(self, user_phone: str) -> Dict[str, Any]:
+    def get_user_conversation(self, user_phone: str) -> Dict[str, Any]:
         """
         Get all conversation history for a user
         
@@ -107,7 +107,7 @@ class ChatService:
         }
 
     
-    async def save_agent_response(self, chat_id: str, agent_response: str) -> Message:
+    def save_agent_response(self, chat_id: str, agent_response: str) -> Message:
         """
         Save the agent's response to the chat
         
@@ -144,7 +144,7 @@ class ChatService:
 
 
     
-    async def get_property_id_from_chat(self, chat_id: str):
+    def get_property_id_from_chat(self, chat_id: str):
         """
         Get property ID associated with a chat by finding property owned by the chat's user
         
@@ -175,7 +175,7 @@ class ChatService:
         
         return None
     
-    async def get_user_from_chat(self, chat_id: str) -> Optional[User]:
+    def get_user_from_chat(self, chat_id: str) -> Optional[User]:
         """
         Get user associated with a chat
         
