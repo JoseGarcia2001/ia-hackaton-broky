@@ -97,7 +97,15 @@ class UserCRUD:
         """
         logger.info(f"Adding availability slots to user {user_id}")
         try:
+            # Check if user exists first
+            user_doc = self.collection.find_one({"_id": ObjectId(user_id)})
+            if not user_doc:
+                logger.error(f"User {user_id} not found")
+                return False
+            
             slots_data = [slot.model_dump() for slot in availability_slots]
+            logger.info(f"Serialized slots data: {slots_data}")
+            
             result = self.collection.update_one(
                 {"_id": ObjectId(user_id)},
                 {
@@ -105,9 +113,11 @@ class UserCRUD:
                     "$set": {"updated_at": datetime.utcnow()}
                 }
             )
+            
+            logger.info(f"Update result - matched: {result.matched_count}, modified: {result.modified_count}")
             return result.modified_count > 0
         except Exception as e:
-            print(f"Error adding availability: {e}")
+            logger.error(f"Error adding availability: {e}")
             return False
     
     def check_availability(self, user_id: str, start_time: datetime, end_time: datetime) -> bool:
