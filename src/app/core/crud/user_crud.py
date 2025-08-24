@@ -138,14 +138,23 @@ class UserCRUD:
             if not user_doc or not user_doc.get("availability"):
                 return True
             
-            for slot in user_doc["availability"]:
-                slot_start = datetime.fromisoformat(slot["start_time"].replace("Z", "+00:00"))
-                slot_end = datetime.fromisoformat(slot["end_time"].replace("Z", "+00:00"))
-                
-                if (start_time < slot_end and end_time > slot_start):
-                    return False
+            # Convert datetime to day_of_week and time for matching
+            requested_day = start_time.weekday()  # 0=Monday, 6=Sunday
+            requested_start_time = start_time.time()
+            requested_end_time = end_time.time()
             
-            return True
+            for slot in user_doc["availability"]:
+                slot_day = slot["day_of_week"]
+                slot_start_time = datetime.strptime(slot["start_time"], "%H:%M:%S").time()
+                slot_end_time = datetime.strptime(slot["end_time"], "%H:%M:%S").time()
+                
+                # Check if it's the same day and times overlap
+                if (requested_day == slot_day and 
+                    requested_start_time < slot_end_time and 
+                    requested_end_time > slot_start_time):
+                    return False  # Conflict found - slot is busy
+            
+            return True  # No conflicts found
         except Exception as e:
             print(f"Error checking availability: {e}")
             return False
@@ -166,7 +175,22 @@ class UserCRUD:
             if not user_doc or not user_doc.get("availability"):
                 return []
             
-            return [AvailabilitySlot(**slot) for slot in user_doc["availability"]]
+            # Convert stored format to AvailabilitySlot objects
+            slots = []
+            for slot in user_doc["availability"]:
+                try:
+                    slot_data = {
+                        "day_of_week": slot["day_of_week"],
+                        "start_time": datetime.strptime(slot["start_time"], "%H:%M:%S").time(),
+                        "end_time": datetime.strptime(slot["end_time"], "%H:%M:%S").time(),
+                        "description": slot.get("description")
+                    }
+                    slots.append(AvailabilitySlot(**slot_data))
+                except Exception as slot_error:
+                    print(f"Error parsing slot: {slot_error}")
+                    continue
+            
+            return slots
         except Exception as e:
             print(f"Error getting availability: {e}")
             return []

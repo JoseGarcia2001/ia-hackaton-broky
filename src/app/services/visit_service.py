@@ -162,13 +162,14 @@ class VisitService:
             return []
     
     
-    def check_seller_availability_conflict(self, seller_id: str, requested_slot: AvailabilitySlot) -> bool:
+    def check_seller_availability_conflict(self, seller_id: str, start_time: datetime, end_time: datetime) -> bool:
         """
         Check if the requested slot conflicts with seller's availability slots
         
         Args:
             seller_id: ID of the seller
-            requested_slot: Requested time slot for the visit
+            start_time: Start datetime of the requested visit
+            end_time: End datetime of the requested visit
             
         Returns:
             bool: True if there are conflicts (seller is busy), False if available
@@ -177,21 +178,23 @@ class VisitService:
             # Use user CRUD to check availability directly
             return not self.user_crud.check_availability(
                 seller_id, 
-                requested_slot.start_time, 
-                requested_slot.end_time
+                start_time, 
+                end_time
             )
             
         except Exception as e:
             print(f"Error checking seller availability: {e}")
             return True  # Return True (conflict) on error to be safe
     
-    def attempt_visit_creation(self, chat_id: str, requested_slot: AvailabilitySlot) -> dict:
+    def attempt_visit_creation(self, chat_id: str, start_time: datetime, end_time: datetime, description: Optional[str] = None) -> dict:
         """
         Attempt to create a visit after checking availability conflicts
         
         Args:
             chat_id: Chat ID to get property and buyer info
-            requested_slot: Requested time slot for the visit
+            start_time: Start datetime of the requested visit
+            end_time: End datetime of the requested visit
+            description: Optional description for the visit
             
         Returns:
             dict: Success/failure with message and available_slots if needed
@@ -219,7 +222,7 @@ class VisitService:
                 return {"success": False, "message": "No se encontró el comprador", "available_slots": []}
             
             # Check seller availability conflict
-            has_conflict = self.check_seller_availability_conflict(property_obj.owner_id, requested_slot)
+            has_conflict = self.check_seller_availability_conflict(property_obj.owner_id, start_time, end_time)
             
             if has_conflict:
                 # Get available slots to return to user
@@ -235,8 +238,8 @@ class VisitService:
                 property_id=property_obj.id,
                 buyer_id=buyer.id,
                 seller_id=property_obj.owner_id,
-                scheduled_at=requested_slot.start_time,
-                notes=requested_slot.description
+                scheduled_at=start_time,
+                notes=description
             )
             
             # Create visit data with CONFIRMED status
@@ -256,8 +259,9 @@ class VisitService:
             if visit:
                 # Add the confirmed visit slot to seller's availability
                 visit_slot = AvailabilitySlot(
-                    start_time=requested_slot.start_time,
-                    end_time=requested_slot.end_time,
+                    day_of_week=start_time.weekday(),
+                    start_time=start_time.time(),
+                    end_time=end_time.time(),
                     description=f"Visita confirmada - {buyer.name if buyer.name else 'Comprador'}"
                 )
                 

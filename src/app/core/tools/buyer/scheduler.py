@@ -10,8 +10,17 @@ from ....services.user_service import UserService, BuyerInfo, BuyerProgress
 from ....services.visit_service import VisitService, VisitInfo
 from ....services.property_service import PropertyService
 from ....models.user import AvailabilitySlot
+from pydantic import BaseModel
+from datetime import datetime
 from ....models.visit import VisitStatus
 from ....utils.logger import logger
+
+
+class VisitRequest(BaseModel):
+    """Model for visit requests with specific datetime"""
+    start_time: datetime
+    end_time: datetime
+    description: Optional[str] = None
 
 
 @tool
@@ -99,7 +108,7 @@ def get_seller_availability(state: Annotated[dict, InjectedState]) -> List[Avail
 
 
 @tool
-def save_visit_info(requested_slot: AvailabilitySlot, state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
+def save_visit_info(requested_slot: VisitRequest, state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
     """
     Herramienta útil para registrar la información de la visita.
     """
@@ -108,7 +117,7 @@ def save_visit_info(requested_slot: AvailabilitySlot, state: Annotated[dict, Inj
         chat_id = state.get("chat_id")
         visit_service = VisitService()
         
-        result = visit_service.attempt_visit_creation(chat_id, requested_slot)
+        result = visit_service.attempt_visit_creation(chat_id, requested_slot.start_time, requested_slot.end_time, requested_slot.description)
         return result
         
     except Exception as e:

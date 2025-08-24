@@ -62,7 +62,7 @@ def save_availability(
     Herramienta útil para almacenar o actualizar el horario de disponibilidad del vendedor.
 
     Args:
-        availability_slots: List of AvailabilitySlot objects with start_time, end_time, and optional description
+        availability_slots: List of AvailabilitySlot objects with day_of_week, start_time, end_time, and optional description
         state: Injected state containing chat_id
 
     Returns:

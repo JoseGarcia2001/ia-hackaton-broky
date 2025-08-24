@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, time
 from enum import Enum
 
 
@@ -10,9 +10,10 @@ class UserRole(str, Enum):
 
 
 class AvailabilitySlot(BaseModel):
-    """Model for time slots"""
-    start_time: datetime = Field(..., description="Start time of time slot")
-    end_time: datetime = Field(..., description="End time of time slot")
+    """Model for recurring weekly time slots"""
+    day_of_week: int = Field(..., ge=0, le=6, description="Day of week (0=Monday, 6=Sunday)")
+    start_time: time = Field(..., description="Start time")
+    end_time: time = Field(..., description="End time")
     description: Optional[str] = Field(None, description="Description of time slot")
 
 
