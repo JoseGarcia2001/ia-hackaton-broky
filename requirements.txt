@@ -11,3 +11,6 @@ langgraph==0.6.6
 langgraph-supervisor==0.0.29
 langchain==0.3.27
 langchain-openai==0.3.31
+loguru==0.7.0
+openai==1.99.9
+whisper==1.0.0

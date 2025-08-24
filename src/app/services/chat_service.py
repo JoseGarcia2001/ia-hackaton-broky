@@ -1,11 +1,10 @@
 from typing import Dict, Any
 from datetime import datetime
-from src.app.models.message import MessageSender, MessageType
-from src.app.core.database import get_db
-from src.app.core.crud.chat_crud import ChatCRUD
-from src.app.core.crud.user_crud import UserCRUD
-from src.app.core.crud.message_crud import MessageCRUD
-from src.app.models.message import Message
+from ..models.message import MessageSender, MessageType, Message
+from ..core.database import get_db
+from ..core.crud.chat_crud import ChatCRUD
+from ..core.crud.user_crud import UserCRUD
+from ..core.crud.message_crud import MessageCRUD
 
 
 def process_chat_message(message_data: Dict[str, Any]) -> Dict[str, Any]:

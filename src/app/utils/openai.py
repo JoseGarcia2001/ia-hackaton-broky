@@ -1,7 +1,7 @@
 """
 OpenAI utils
 """
-from app.config import settings
+from ..config import settings
 from openai import OpenAI
 from loguru import logger
 

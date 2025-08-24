@@ -28,6 +28,7 @@ services:
       - INFOBIP_API_KEY=${INFOBIP_API_KEY}
       - INFOBIP_BASE_URL=${INFOBIP_BASE_URL}
       - INFOBIP_WHATSAPP_FROM=${INFOBIP_WHATSAPP_FROM}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - mongo
     networks:
