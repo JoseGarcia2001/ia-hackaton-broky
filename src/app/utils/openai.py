@@ -106,7 +106,7 @@ class OpenIA:
                 "..", 
                 "resources", 
                 "qr", 
-                "imagen_qr.png"
+                "imagen_qr_roky.png"
             )
             
             if not os.path.exists(base_image_path):
@@ -258,7 +258,7 @@ class OpenIA:
                 "..", 
                 "resources", 
                 "qr", 
-                "imagen_qr.png"
+                "imagen_qr_roky.png"
             )
             
             if not os.path.exists(base_image_path):
