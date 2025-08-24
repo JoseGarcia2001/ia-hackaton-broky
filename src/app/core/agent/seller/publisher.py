@@ -6,7 +6,7 @@ Defines the PublisherAgent class, which is responsible for registering the avail
 - Offer to publish the property on the platforms*.
 """
 
-from src.app.core.agent.main import Agent
+from src.app.core.agent.main import Agent, AgentState
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
@@ -22,7 +22,8 @@ class PublisherAgent(Agent):
             model="openai:gpt-4.1",
             tools=[save_availability, update_business_stage],
             prompt=prompt.format(),
-            name="AgendaAgent"
+            name="AgendaAgent",
+            state_schema=AgentState
         )
         
         return [agenda_agent]

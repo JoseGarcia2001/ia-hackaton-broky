@@ -7,7 +7,7 @@ Defines the SchedulerAgent class, which is responsible for scheduling visits for
 
 from datetime import datetime
 
-from src.app.core.agent.main import Agent
+from src.app.core.agent.main import Agent, AgentState
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
@@ -37,6 +37,7 @@ class SchedulerAgent(Agent):
             ],
             prompt=prompt.format(current_date=datetime.now().strftime("%Y-%m-%d")),
             name="BookingAgent",
+            state_schema=AgentState
         )
 
         return [booking_agent]

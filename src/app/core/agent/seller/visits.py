@@ -3,7 +3,7 @@ Defines the VisitsAgent which is responsible for managing the seller agenda
 - Manage confirmation of the visits.
 """
 
-from src.app.core.agent.main import Agent
+from src.app.core.agent.main import Agent, AgentState
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
@@ -17,11 +17,10 @@ class VisitsAgent(Agent):
         prompt = hub.pull("agenda_agent")
         agenda_management_agent = create_react_agent(
             model="openai:gpt-4.1",
-            # TODO: Implement the tools for the visit confirmation agent
             tools=[save_availability],
-            # TODO: Iterate over the prompt
             prompt=prompt.format(),
-            name="AgendaManagementAgent"
+            name="AgendaManagementAgent",
+            state_schema=AgentState
         )
 
         property_card_agent = create_react_agent(
@@ -30,7 +29,8 @@ class VisitsAgent(Agent):
             tools=[],
             # TODO: Iterate over the prompt
             prompt="Eres un agente que se encarga de crear fichas detalladas de propiedades con toda la información relevante.",
-            name="PropertyCardAgent"
+            name="PropertyCardAgent",
+            state_schema=AgentState
         )
         
         appraisal_agent = create_react_agent(
@@ -39,7 +39,8 @@ class VisitsAgent(Agent):
             tools=[],
             # TODO: Iterate over the prompt
             prompt="Eres un agente que se encarga de realizar avalúos de propiedades basado en características del mercado.",
-            name="AppraisalAgent"
+            name="AppraisalAgent",
+            state_schema=AgentState
         )
         
         publishing_agent = create_react_agent(
@@ -48,7 +49,8 @@ class VisitsAgent(Agent):
             tools=[],
             # TODO: Iterate over the prompt
             prompt="Eres un agente que se encarga de publicar propiedades en diferentes plataformas digitales.",
-            name="PublishingAgent"
+            name="PublishingAgent",
+            state_schema=AgentState
         )
         
         return [agenda_management_agent, property_card_agent, appraisal_agent, publishing_agent]

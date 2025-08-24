@@ -43,7 +43,7 @@ async def infobip_webhook(webhook_data: dict):
     # Receive message from Infobip
     message_data = infobip_service.receive_webhook_message(webhook_data)
     # Process chat message (5 steps: create chat, get user type, process message type, store message)
-    chat_data = await chat_service.process_chat_message(message_data)
+    chat_data = chat_service.process_chat_message(message_data)
     
     # Extract processed data
     user_type = chat_data["user_type"]
@@ -69,7 +69,7 @@ async def infobip_webhook(webhook_data: dict):
     infobip_service.send_message(message_data.get("from"), agent_response)
     
     # Save agent response to chat history
-    await chat_service.save_agent_response(chat_id, agent_response.message)
+    chat_service.save_agent_response(chat_id, agent_response.message)
 
     return MessageResponse(
         message=agent_response.message,

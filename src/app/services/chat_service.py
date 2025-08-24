@@ -1,5 +1,6 @@
 from typing import Dict, Any, Optional
 from datetime import datetime
+import re
 from ..models.user import User
 from ..models.property import Property
 from ..models.message import MessageSender, MessageType, Message
@@ -7,6 +8,7 @@ from ..core.database import get_db
 from ..core.crud.chat_crud import ChatCRUD
 from ..core.crud.user_crud import UserCRUD
 from ..core.crud.message_crud import MessageCRUD
+from ..core.crud.property_crud import PropertyCRUD
 
 class ChatService:
     """Service layer for chat operations"""
@@ -16,15 +18,17 @@ class ChatService:
         self.chat_crud = ChatCRUD(db)
         self.user_crud = UserCRUD(db)
         self.message_crud = MessageCRUD(db)
+        self.property_crud = PropertyCRUD(db)
     
-    async def process_chat_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
+    def process_chat_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Process chat message through the 5 steps:
-        1. Create chat if not existent
-        2. Get user type  
-        3. Process message type (already done by infobip_service)
-        4. Store the message
-        5. Return structured data with full context for agent processing
+        Process chat message through the 6 steps:
+        1. Create/get user first  
+        2. Create/get chat
+        3. Update chat with proper user_id if needed
+        4. Get user type from user object
+        5. Store the message
+        6. Return structured data with full context for agent processing
         
         Args:
             message_data: Processed message data from Infobip
@@ -41,17 +45,47 @@ class ChatService:
         Returns:
             Dict containing user_type, latest message, and conversation history
         """
-        # Step 1: Get or create chat
+        # Step 1: Get or create user first
         user_phone = message_data.get("from", "")
+        user = self.user_crud.get_or_create_user(user_phone)
+        
+        # Step 2: Get or create chat
         chat = self.chat_crud.get_or_create_chat(user_phone)
         
-        # Step 2: Get user type
-        user_type = self.user_crud.get_user_type(user_phone)
+        # Step 3: Update chat with real user_id if needed
+        if chat.user_id != user.id:
+            # Update the chat to have the real user_id
+            success = self.chat_crud.update_chat_user_id(chat.id, user.id)
+            if success:
+                # Update the chat object
+                chat.user_id = user.id
         
-        # Step 3: Store the message
+        # Step 4: Check for property inquiry pattern
+        user_type = "seller" if user.role.value == "seller" else "buyer"  # Default user type
+        
+        # Check if message contains property inquiry pattern
+        message_content = message_data.get("content", {}).get("text", "")
+        property_inquiry_pattern = r"¡Hola! 🏠 Me gustaría obtener información sobre la propiedad ubicada en (.+)"
+        match = re.search(property_inquiry_pattern, message_content, re.IGNORECASE)
+        
+        if match:
+            # Extract property address
+            property_address = match.group(1).strip()
+            
+            # Look up property by address
+            property_obj = self.property_crud.get_property_by_address(property_address)
+            
+            if property_obj:
+                # Update chat with property_id and override user_type to buyer
+                update_data = {"property_id": property_obj.id}
+                self.chat_crud.update_chat(chat.id, update_data)
+                user_type = "buyer"
+        
+        
+        # Step 5: Store the message
         stored_message = self.message_crud.add_message(chat.id, message_data)
         
-        # Step 4: Get full conversation history for agent context with sender info
+        # Step 6: Get full conversation history for agent context with sender info
         messages = self.message_crud.get_messages_by_chat(chat.id)
         conversation_history = [
             {
@@ -71,7 +105,7 @@ class ChatService:
         }
 
     
-    async def get_user_conversation(self, user_phone: str) -> Dict[str, Any]:
+    def get_user_conversation(self, user_phone: str) -> Dict[str, Any]:
         """
         Get all conversation history for a user
         
@@ -107,7 +141,7 @@ class ChatService:
         }
 
     
-    async def save_agent_response(self, chat_id: str, agent_response: str) -> Message:
+    def save_agent_response(self, chat_id: str, agent_response: str) -> Message:
         """
         Save the agent's response to the chat
         
@@ -144,7 +178,7 @@ class ChatService:
 
 
     
-    async def get_property_id_from_chat(self, chat_id: str):
+    def get_property_id_from_chat(self, chat_id: str):
         """
         Get property ID associated with a chat by finding property owned by the chat's user
         
@@ -175,7 +209,7 @@ class ChatService:
         
         return None
     
-    async def get_user_from_chat(self, chat_id: str) -> Optional[User]:
+    def get_user_from_chat(self, chat_id: str) -> Optional[User]:
         """
         Get user associated with a chat
         
@@ -216,3 +250,16 @@ class ChatService:
             return None
 
         return property
+    
+    def update_chat(self, chat_id: str, update_data: Dict[str, Any]) -> bool:
+        """
+        Update chat with arbitrary fields
+        
+        Args:
+            chat_id: ID of the chat
+            update_data: Dictionary with fields to update
+            
+        Returns:
+            bool: True if updated successfully, False otherwise
+        """
+        return self.chat_crud.update_chat(chat_id, update_data)

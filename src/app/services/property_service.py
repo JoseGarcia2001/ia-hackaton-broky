@@ -14,6 +14,8 @@ class PropertyInfo(BaseModel):
     address: Optional[str] = Field(description="Dirección de la propiedad")
     type: Optional[str] = Field(description="Tipo de propiedad")
     price: Optional[float] = Field(description="Precio de la propiedad")
+    description: Optional[str] = Field(description="Descripción de la propiedad")
+    pictures: Optional[list[str]] = Field(description="Fotos de la propiedad")
 
 
 class PropertyProgress(BaseModel):
@@ -30,29 +32,45 @@ class PropertyService:
         db = get_db()
         self.property_crud = PropertyCRUD(db)
     
-    async def create_property(self, info: PropertyInfo, owner_id: str) -> Optional[Property]:
+    def create_property(self, info: PropertyInfo, owner_id: str) -> Optional[Property]:
         """Create a new property with initial data and return the full property"""
         # Convert PropertyInfo to property data
         property_data = {
             "address": info.address,
             "type": info.type,
             "value": float(info.price) if info.price else 0.0,
+            "description": info.description,
+            "images": info.pictures or [],
             "owner_id": owner_id,
         }
         
         property_id = self.property_crud.create_property(property_data)
         return self.property_crud.get_property_by_id(property_id)
     
-    async def get_property_id_by_address(self, address: str) -> Optional[Property]:
+    def get_property_id_by_address(self, address: str) -> Optional[Property]:
         """Get property by address, returns full property object like create"""
         property_obj = self.property_crud.get_property_by_address(address)
         return property_obj
     
-    async def update_property(self, property_id: str, update_data: Dict[str, Any]) -> bool:
-        """Update property with partial fields"""
-        return self.property_crud.update_property_partial(property_id, update_data)
+    def update_property(self, property_id: str, info: PropertyInfo) -> bool:
+        """Update property with PropertyInfo data"""
+        update_data = {}
+        if info.address:
+            update_data["address"] = info.address
+        if info.type:
+            update_data["type"] = info.type
+        if info.price:
+            update_data["value"] = float(info.price)
+        if info.description:
+            update_data["description"] = info.description
+        if info.pictures:
+            update_data["images"] = info.pictures
+        
+        if update_data:
+            return self.property_crud.update_property_partial(property_id, update_data)
+        return True
     
-    async def get_progress_info(self, property_id: str) -> Optional[PropertyProgress]:
+    def get_progress_info(self, property_id: str) -> Optional[PropertyProgress]:
         """Get property progress info with missing fields"""
         progress_data = self.property_crud.get_property_missing_fields(property_id)
         
@@ -66,6 +84,6 @@ class PropertyService:
         
         return None
     
-    async def get_property_full_info(self, property_id: str) -> Optional[Property]:
+    def get_property_full_info(self, property_id: str) -> Optional[Property]:
         """Get complete property information"""
         return self.property_crud.get_property_by_id(property_id)

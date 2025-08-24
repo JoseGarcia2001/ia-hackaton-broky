@@ -6,13 +6,12 @@ Defines the RegisterAgent class, which is responsible for registering sellers in
 - Generate the QR associated to the property.
 """
 
-from src.app.core.agent.main import Agent
+from src.app.core.agent.main import Agent, AgentState
 from src.app.core.tools.general import update_business_stage
 from src.app.core.tools.register import get_user_info, save_property_info, get_remaining_info, generate_qr
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
-
 from langchain import hub
 
 
@@ -25,7 +24,8 @@ class RegisterAgent(Agent):
             model="openai:gpt-4.1",
             tools=[save_property_info, get_user_info, get_remaining_info, generate_qr, update_business_stage],
             prompt=prompt.format(),
-            name="PropertyRegistrationAgent"
+            name="PropertyRegistrationAgent",
+            state_schema=AgentState
         )
         
         return [property_registration_agent]

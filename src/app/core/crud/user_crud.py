@@ -27,16 +27,38 @@ class UserCRUD:
     
     def get_or_create_user(self, phone: str, name: str = None) -> User:
         """
-        Get existing user or create new one
+        Get existing user or create new one in database
         """
-        # Mock implementation for now
-        return User(
-            id=f"user_{phone}",
-            name=name or f"User {phone}",
-            phone=phone,
-            role=UserRole.BUYER,
-            created_at=datetime.utcnow()
-        )
+        # Try to find existing user
+        user_doc = self.collection.find_one({"phone": phone})
+        
+        if user_doc:
+            # Return existing user
+            return User(
+                id=str(user_doc["_id"]),
+                name=user_doc["name"],
+                phone=user_doc["phone"],
+                role=UserRole(user_doc["role"]),
+                created_at=user_doc["created_at"]
+            )
+        else:
+            # Create new user in database
+            user_data = {
+                "name": name or f"User {phone}",
+                "phone": phone,
+                "role": UserRole.BUYER.value,
+                "created_at": datetime.utcnow()
+            }
+            
+            result = self.collection.insert_one(user_data)
+            
+            return User(
+                id=str(result.inserted_id),
+                name=user_data["name"],
+                phone=phone,
+                role=UserRole.BUYER,
+                created_at=user_data["created_at"]
+            )
     
     def get_user_by_id(self, user_id: str) -> Optional[User]:
         """
@@ -150,4 +172,49 @@ class UserCRUD:
             return None
         except Exception as e:
             print(f"Error getting user: {e}")
+            return None
+    
+    def update_user_partial(self, user_id: str, update_data: Dict[str, Any]) -> bool:
+        """Update user with partial fields"""
+        try:
+            update_data["updated_at"] = datetime.utcnow()
+            result = self.collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": update_data}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            print(f"Error updating user: {e}")
+            return False
+    
+    def get_user_missing_fields(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get user progress info with missing fields"""
+        try:
+            user_doc = self.collection.find_one({"_id": ObjectId(user_id)})
+            if not user_doc:
+                return None
+            
+            missing_fields = []
+            
+            # Check if name is missing or is default format
+            name = user_doc.get("name", "")
+            if not name or name.startswith("User "):
+                missing_fields.append("name")
+            
+            # Calculate completion percentage
+            total_fields = 1  # Only name for now
+            completed_fields = total_fields - len(missing_fields)
+            completion_percentage = (completed_fields / total_fields) * 100
+            
+            # Determine current stage
+            current_stage = "initial" if missing_fields else "completed"
+            
+            return {
+                "user_id": str(user_doc["_id"]),
+                "current_stage": current_stage,
+                "missing_fields": missing_fields,
+                "completion_percentage": completion_percentage
+            }
+        except Exception as e:
+            print(f"Error getting buyer progress: {e}")
             return None
