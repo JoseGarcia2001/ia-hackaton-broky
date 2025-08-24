@@ -257,20 +257,6 @@ class VisitService:
             visit = self.visit_crud.get_visit_by_id(visit_id)
             
             if visit:
-                # Add the confirmed visit slot to seller's availability
-                visit_slot = AvailabilitySlot(
-                    day_of_week=start_time.weekday(),
-                    start_time=start_time.time(),
-                    end_time=end_time.time(),
-                    description=f"Visita confirmada - {buyer.name if buyer.name else 'Comprador'}"
-                )
-                
-                # Use user CRUD to add the slot directly to seller's availability
-                slot_added = self.user_crud.add_availability(property_obj.owner_id, [visit_slot])
-                
-                if not slot_added:
-                    print(f"Warning: Could not add visit slot to seller's availability for visit {visit.id}")
-                
                 return {
                     "success": True, 
                     "message": "Visita confirmada correctamente", 
