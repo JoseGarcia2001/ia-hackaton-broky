@@ -19,6 +19,14 @@ class BuyerBusinessStage(Enum):
 
 
 @tool
+def save_availability(availability: Annotated[str, "Horario de disponibilidad del vendedor"], state: Annotated[dict, InjectedState]) -> str:
+    """
+    Herramienta útil para almacenar o actualizar el horario de disponibilidad del vendedor.
+    """
+    return "Horario de disponibilidad almacenado correctamente"
+
+
+@tool
 def update_business_stage(
     stage: SellerBusinessStage | BuyerBusinessStage, state: Annotated[dict, InjectedState]
 ) -> str:

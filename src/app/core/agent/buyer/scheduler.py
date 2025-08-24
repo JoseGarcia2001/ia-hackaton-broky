@@ -51,7 +51,7 @@ class SchedulerAgent(Agent):
         
         return [availability_agent, booking_agent, management_agent, qa_agent]
 
-    def get_agents_description(self) -> str:
+    def get_flow_description(self) -> str:
         return (
             "- AvailabilityAgent: Agente especializado en consultar disponibilidad de horarios para visitas.\n"
             "- BookingAgent: Agente especializado en programar visitas y notificar a vendedores.\n"
