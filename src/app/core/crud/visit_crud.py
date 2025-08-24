@@ -16,6 +16,7 @@ class VisitCRUD:
 
     def create_visit(self, visit_data: Dict[str, Any]) -> str:
         """Create a new visit with initial data"""
+        
         logger.info(f"Creating visit with data {visit_data}")
         visit_data["created_at"] = datetime.utcnow()
         visit_data["updated_at"] = datetime.utcnow()
