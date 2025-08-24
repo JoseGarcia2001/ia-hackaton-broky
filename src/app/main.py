@@ -54,16 +54,16 @@ async def infobip_webhook(webhook_data: dict):
     print(f"Conversation: {conversation_history}")
     
     # Get agent
-    # context = {"chat_id": chat_id}
-    # agent = AgentsFactory.get_agent(user_type, context)
+    context = {"chat_id": chat_id}
+    agent = AgentsFactory.get_agent(user_type, context)
     # print(f"Using agent: {agent.__class__.__name__}")
 
     # # Process message with complete conversation context
-    # agent_context = {
-    #     "conversation_history": conversation_history,
-    #     "chat_id": chat_id
-    # }
-    # agent_response: AgentResponse = agent.process(agent_context)
+    agent_context = {
+        "conversation_history": conversation_history,
+        "chat_id": chat_id
+    }
+    agent_response: AgentResponse = agent.process(agent_context)
 
     agent_response = {
         "message": "Gracias por tu mensaje, en breve te responderemos",
