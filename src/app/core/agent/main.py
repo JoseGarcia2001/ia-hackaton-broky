@@ -96,6 +96,8 @@ class Agent(ABC):
 
         response = supervisor.invoke({"messages": messages, "chat_id": agent_context.get("chat_id")}, {"run_name": self.__class__.__name__, "metadata": {"chat_id": agent_context.get("chat_id")}})
 
-        message_response: AgentResponse = AgentResponse(type=MessageType.TEXT, message=response["messages"][-1].content)
+        ai_messages = list(filter(lambda message: isinstance(message, AIMessage), response["messages"]))
+
+        message_response: AgentResponse = AgentResponse(type=MessageType.TEXT, message=ai_messages[-2].content)
 
         return message_response

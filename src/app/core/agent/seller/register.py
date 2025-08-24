@@ -21,7 +21,7 @@ class RegisterAgent(Agent):
 
         property_registration_agent = create_react_agent(
             model="openai:gpt-4.1",
-            tools=[save_property_info, get_user_info, get_remaining_info, generate_qr, update_business_stage],
+            tools=[save_property_info, get_user_info, get_remaining_info, update_business_stage],
             prompt=prompt.format(),
             name="PropertyRegistrationAgent",
             state_schema=AgentState,
