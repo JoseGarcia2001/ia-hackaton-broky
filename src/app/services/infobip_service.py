@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from ..config import settings
 from ..models.whatsapp import (
     WhatsAppResponse,
+    WhatsAppTemplateResponse,
     WhatsAppError
 )
 from ..utils.openai import OpenIA
@@ -137,7 +138,7 @@ class InfobipService:
         template_name: str, 
         language: str = "es",
         template_data: Optional[Dict[str, Any]] = None
-    ) -> WhatsAppResponse:
+    ) -> WhatsAppTemplateResponse:
         """
         Send a template message via WhatsApp
         
@@ -148,30 +149,50 @@ class InfobipService:
             template_data: Data to fill the template
             
         Returns:
-            WhatsAppResponse with API response
+            WhatsAppTemplateResponse with API response containing list of messages
         """
         try:
+            header = {}
+            if template_data.get("image"):
+                header = {"type": "IMAGE", "mediaUrl": template_data.get("image")}
+
+            placeholders = template_data.get("placeholders", [])
+            if not all(plh for plh in placeholders):
+                raise ValueError("Placeholders not valid and/or empty")
+            
+            template_data["body"] = {"placeholders": placeholders}
+            if header:
+                template_data["header"] = header
+
+            if template_data.get("buttons"):
+                buttons = template_data.get("buttons")
+                template_data["buttons"] = buttons
+
             message_data = {
-                "from": self.whatsapp_from,
-                "to": to,
-                "content": {
-                    "templateName": template_name,
-                    "language": language
-                }
+                "messages": [
+                    {
+                        "from": self.whatsapp_from,
+                        "to": to,
+                        "content": {
+                            "templateName": template_name,
+                            "language": language,
+                            "templateData": template_data
+                        }
+                    }
+                ]
             }
             
             if template_data:
-                message_data["content"]["templateData"] = template_data
-            
+                message_data["messages"][0]["content"]["templateData"] = template_data
             response = requests.post(
                 f"{self.base_url}/whatsapp/1/message/template",
                 headers=self._get_headers(),
                 json=message_data,
                 timeout=30.0
             )
-            
+            print(f"Response: {response.json()}")
             if response.status_code == 200:
-                return WhatsAppResponse(**response.json())
+                return WhatsAppTemplateResponse(**response.json())
             else:
                 try:
                     error_data = response.json()

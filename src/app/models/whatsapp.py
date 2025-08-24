@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 class MessageStatus(BaseModel):
     """Model for message status"""
@@ -14,6 +15,12 @@ class WhatsAppResponse(BaseModel):
     messageCount: int = Field(..., description="Number of messages sent")
     messageId: str = Field(..., description="Unique message identifier")
     status: MessageStatus = Field(..., description="Message status information")
+
+
+class WhatsAppTemplateResponse(BaseModel):
+    """Model for WhatsApp template message response from Infobip"""
+    messages: List[WhatsAppResponse] = Field(..., description="List of sent messages")
+
 
 class WhatsAppError(Exception):
     """Exception for WhatsApp errors"""

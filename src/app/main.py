@@ -5,7 +5,6 @@ from .services.infobip_service import InfobipService
 from .services.chat_service import process_chat_message, save_agent_response
 from .core.agents_factory import AgentsFactory
 from .core.agent.main import Agent, AgentResponse
-
 app = FastAPI(
     title="IA Hackaton Broky API",
     description="API desarrollada para el hackaton con FastAPI",
@@ -53,34 +52,18 @@ async def infobip_webhook(webhook_data: dict):
     print(f"User type: {user_type}")    
     print(f"Conversation: {conversation_history}")
     
-    # # Get agent
-    agent: Agent = AgentsFactory.get_agent(user_type)
+    # Get agent
+    # context = {"chat_id": chat_id}
+    # agent = AgentsFactory.get_agent(user_type, context)
+    # print(f"Using agent: {agent.__class__.__name__}")
+
     # # Process message with complete conversation context
-    agent_context = {
-        "conversation_history": conversation_history,
-        "chat_id": chat_id
-    }
-    agent_response: AgentResponse = agent.process(agent_context)
-    # ------------------------------------------------------------------------------------------------
-    # TODO: Remove this after implementing the qr code
-    generator = WhatsAppQRGenerator()
-    filepath = generator.save_qr_image(
-        phone_number=message_data.get("to"),
-        message="¡Hola Broky! 🏠 Me gustaría obtener información sobre la propiedad en #",
-        filename=f"broky_contact_qr_{message_data.get('from')}.png"
-    )
-    print(f"QR code saved in: {filepath}")
-    infobip_service.send_template_message(
-        message_data.get("from"),
-        "banner_qr_broky",
-        {
-            "header": {
-                "type": "IMAGE",
-                "mediaUrl": filepath
-            },
-        }
-    )
-    # ------------------------------------------------------------------------------------------------
+    # agent_context = {
+    #     "conversation_history": conversation_history,
+    #     "chat_id": chat_id
+    # }
+    # agent_response: AgentResponse = agent.process(agent_context)
+
     agent_response = {
         "message": "Gracias por tu mensaje, en breve te responderemos",
         "type": "text"
