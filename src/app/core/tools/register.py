@@ -10,6 +10,7 @@ from ...services.image_integration_service import ImageIntegrationService
 from ...utils.s3_utils import upload_file_to_s3
 
 from ...services.property_service import PropertyService, PropertyInfo, PropertyProgress
+from ...services.qr_service import QRResponse
 from ...services.chat_service import ChatService
 from ...models.property import Property
 from ...models.user import User
@@ -77,16 +78,22 @@ def get_remaining_info(state: Annotated[dict, InjectedState]) -> Optional[Proper
 
 
 @tool
-def generate_qr(phone_number: str, property_id: str) -> str:
+def generate_qr(phone_number: str, state: Annotated[dict, InjectedState]) -> Optional[QRResponse]:
     """
     Herramienta útil para generar el código QR asociado a la propiedad.
     """
+    chat_id = state.get("chat_id")
+    chat_service = ChatService()
+    property_id = chat_service.get_property_id_from_chat(chat_id)
+    property_service = PropertyService()
+    property_obj = property_service.get_property_full_info(property_id)
+    address = property_obj.address
     integration_service = ImageIntegrationService()
     qr_position = None
     qr_size = None
     path = integration_service.create_property_qr_image(
         phone_number=phone_number,
-        property_message=f"¡Hola! 🏠 Me gustaría obtener información sobre la propiedad ubicada en {property_id}",
+        property_message=f"¡Hola! 🏠 Me gustaría obtener información sobre la propiedad ubicada en {address}",
         replace_center_qr=True,
         qr_position=qr_position,
         qr_size=qr_size,

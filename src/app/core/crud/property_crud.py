@@ -97,23 +97,14 @@ class PropertyCRUD:
         if not property_obj.description or property_obj.description.strip() == "":
             missing_fields.append("description")
         
-        if not property_obj.images:
+        if len(property_obj.images) < 3:
             missing_fields.append("images")
-        
-        if not property_obj.legal_docs:
-            missing_fields.append("legal_docs")
-        
-        if not property_obj.amenities:
-            missing_fields.append("amenities")
-        
-        if not property_obj.nearby_places:
-            missing_fields.append("nearby_places")
         
         return {
             "property_id": property_id,
             "current_stage": property_obj.business_stage,
             "missing_fields": missing_fields,
-            "completion_percentage": round((8 - len(missing_fields)) / 8 * 100, 2)
+            "completion_percentage": round((5 - len(missing_fields)) / 5 * 100, 2)
         }
     
     def get_property_stage(self, property_id: str) -> SellerStage:
