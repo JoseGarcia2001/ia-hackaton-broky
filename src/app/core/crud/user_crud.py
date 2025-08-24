@@ -103,7 +103,14 @@ class UserCRUD:
                 logger.error(f"User {user_id} not found")
                 return False
             
-            slots_data = [slot.model_dump() for slot in availability_slots]
+            # Convert time objects to strings for MongoDB storage
+            slots_data = []
+            for slot in availability_slots:
+                slot_dict = slot.model_dump()
+                # Convert time objects to string format
+                slot_dict["start_time"] = slot.start_time.strftime("%H:%M:%S")
+                slot_dict["end_time"] = slot.end_time.strftime("%H:%M:%S")
+                slots_data.append(slot_dict)
             logger.info(f"Serialized slots data: {slots_data}")
             
             result = self.collection.update_one(
