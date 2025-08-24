@@ -28,7 +28,7 @@ class PropertyInfo(BaseModel):
 
     address: Optional[str] = Field(description="Dirección de la propiedad")
     type: Optional[str] = Field(description="Tipo de propiedad")
-    price: Optional[str] = Field(description="Precio de la propiedad")
+    price: Optional[float] = Field(description="Precio de la propiedad")
 
 
 @tool
