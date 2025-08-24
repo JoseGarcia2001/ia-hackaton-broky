@@ -2,6 +2,9 @@ from enum import Enum
 
 
 class SellerStage(str, Enum):
+    """
+    Estados validos para el tipo de usuario seller
+    """
     REGISTRATION = "registration"
     PUBLISHING = "publishing" 
     VISITS = "visits"
@@ -9,6 +12,9 @@ class SellerStage(str, Enum):
 
 
 class BuyerStage(str, Enum):
+    """
+    Estados validos para el tipo de usuario buyer
+    """
     CONTACT = "contact"
     QUALIFICATION = "qualification"
     SCHEDULING = "scheduling" 
