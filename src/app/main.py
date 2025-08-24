@@ -61,7 +61,6 @@ async def infobip_webhook(webhook_data: dict):
         "chat_id": chat_id
     }
     agent_response: AgentResponse = agent.process(agent_context)
-    # # Send response to Infobip
     # ------------------------------------------------------------------------------------------------
     # TODO: Remove this after implementing the qr code
     generator = WhatsAppQRGenerator()
@@ -71,11 +70,22 @@ async def infobip_webhook(webhook_data: dict):
         filename=f"broky_contact_qr_{message_data.get('from')}.png"
     )
     print(f"QR code saved in: {filepath}")
+    infobip_service.send_template_message(
+        message_data.get("from"),
+        "banner_qr_broky",
+        {
+            "header": {
+                "type": "IMAGE",
+                "mediaUrl": filepath
+            },
+        }
+    )
     # ------------------------------------------------------------------------------------------------
     agent_response = {
         "message": "Gracias por tu mensaje, en breve te responderemos",
         "type": "text"
     }
+    # # Send response to Infobip
     infobip_service.send_message(message_data.get("from"), agent_response)
     
     # Save agent response to chat history

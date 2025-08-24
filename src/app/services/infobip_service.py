@@ -164,7 +164,7 @@ class InfobipService:
                 message_data["content"]["templateData"] = template_data
             
             response = requests.post(
-                f"{self.base_url}/whatsapp/1/message",
+                f"{self.base_url}/whatsapp/1/message/template",
                 headers=self._get_headers(),
                 json=message_data,
                 timeout=30.0
