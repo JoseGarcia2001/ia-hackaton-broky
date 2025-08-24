@@ -48,24 +48,14 @@ def generate_sales_contract(buyer_info: str, state: Annotated[dict, InjectedStat
         url_public = upload_file_to_s3(contract_pdf_path)
         
         if url_public:
-            # Send via InfobipService (same as QR tool - using image template)
-            InfobipService().send_template_message(
-                to=phone_number,
-                template_name="banner_qr_broky",
-                language="es",
-                template_data={
-                    "image": url_public,
-                    "placeholders": []
-                }
-            )
-            
-            # Mock contract generation
-            contract_number = f"CV-{random.randint(1000, 9999)}-2024"
             
             return {
                 "success": True,
-                "message": f"✅ **Contrato de Compra y Venta Generado**\n\n📋 **Número de Contrato:** {contract_number}\n📅 **Fecha:** {datetime.now().strftime('%d/%m/%Y')}\n👤 **Comprador:** {buyer_info}\n\n📄 **Documento del Contrato (PDF):**\n🔗 {url_public}\n\nEl contrato ha sido enviado y generado correctamente.",
+                # simple message w url
+                "message": f"Contrato de Compra y Venta Generado\nDocumento del Contrato (PDF):\n🔗 {url_public}"
+
             }
+
         else:
             logger.error("Failed to upload contract PDF to S3")
             return {

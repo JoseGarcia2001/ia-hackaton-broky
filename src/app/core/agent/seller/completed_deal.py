@@ -10,7 +10,7 @@ from src.app.core.agent.main import Agent, AgentState
 from src.app.core.tools.contracts import (
     generate_sales_contract, 
 )
-from src.app.core.tools.general import update_business_stage, get_last_buyer_from_visit
+from src.app.core.tools.general import update_business_stage
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
@@ -22,7 +22,7 @@ class CompletedDealAgent(Agent):
         # Contract management agent for handling the completed deal flow
         contract_agent = create_react_agent(
             model="openai:gpt-4o",
-            tools=[get_last_buyer_from_visit, generate_sales_contract],
+            tools=[generate_sales_contract],
             prompt=(
                 "Eres un agente especializado en la gestión de acuerdos completados de compra y venta de propiedades. "
                 "Tu función es seguir un flujo conversacional específico con los vendedores.\n\n"
