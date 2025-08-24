@@ -3,6 +3,7 @@ from ..core.database import get_db
 from ..core.crud.property_crud import PropertyCRUD
 from ..core.crud.chat_crud import ChatCRUD
 from ..models.business_stage import SellerStage, BuyerStage
+from ..utils.logger import logger
 
 
 class StageService:
@@ -15,6 +16,7 @@ class StageService:
     
     def get_seller_stage(self, chat_id: str) -> SellerStage:
         """Get seller business stage from chat context"""
+        logger.info(f"Getting seller business stage for chat {chat_id}")
         # Get chat to find property_id
         chat_doc = self.db.chats.find_one({"_id": chat_id})
         if not chat_doc or not chat_doc.get("property_id"):
@@ -25,10 +27,12 @@ class StageService:
     
     def get_buyer_stage(self, chat_id: str) -> Optional[BuyerStage]:
         """Get buyer business stage from chat"""
+        logger.info(f"Getting buyer business stage for chat {chat_id}")
         return self.chat_crud.get_chat_stage(chat_id)
     
     def update_seller_stage(self, chat_id: str, new_stage: SellerStage) -> bool:
         """Update seller business stage via property"""
+        logger.info(f"Updating seller business stage for chat {chat_id} to {new_stage}")
         # Get chat to find property_id
         chat_doc = self.db.chats.find_one({"_id": chat_id})
         if not chat_doc or not chat_doc.get("property_id"):
@@ -38,4 +42,5 @@ class StageService:
     
     def update_buyer_stage(self, chat_id: str, new_stage: BuyerStage) -> bool:
         """Update buyer business stage in chat"""
+        logger.info(f"Updating buyer business stage for chat {chat_id} to {new_stage}")
         return self.chat_crud.update_chat_stage(chat_id, new_stage)
