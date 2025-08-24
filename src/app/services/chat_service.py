@@ -19,12 +19,13 @@ class ChatService:
     
     def process_chat_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Process chat message through the 5 steps:
-        1. Create chat if not existent
-        2. Get user type  
-        3. Process message type (already done by infobip_service)
-        4. Store the message
-        5. Return structured data with full context for agent processing
+        Process chat message through the 6 steps:
+        1. Create/get user first  
+        2. Create/get chat
+        3. Update chat with proper user_id if needed
+        4. Get user type from user object
+        5. Store the message
+        6. Return structured data with full context for agent processing
         
         Args:
             message_data: Processed message data from Infobip
@@ -41,17 +42,28 @@ class ChatService:
         Returns:
             Dict containing user_type, latest message, and conversation history
         """
-        # Step 1: Get or create chat
+        # Step 1: Get or create user first
         user_phone = message_data.get("from", "")
+        user = self.user_crud.get_or_create_user(user_phone)
+        
+        # Step 2: Get or create chat
         chat = self.chat_crud.get_or_create_chat(user_phone)
         
-        # Step 2: Get user type
-        user_type = self.user_crud.get_user_type(user_phone)
+        # Step 3: Update chat with real user_id if needed
+        if chat.user_id != user.id:
+            # Update the chat to have the real user_id
+            success = self.chat_crud.update_chat_user_id(chat.id, user.id)
+            if success:
+                # Update the chat object
+                chat.user_id = user.id
         
-        # Step 3: Store the message
+        # Step 4: Get user type (can use user object now)
+        user_type = "seller" if user.role.value == "seller" else "buyer"
+        
+        # Step 5: Store the message
         stored_message = self.message_crud.add_message(chat.id, message_data)
         
-        # Step 4: Get full conversation history for agent context with sender info
+        # Step 6: Get full conversation history for agent context with sender info
         messages = self.message_crud.get_messages_by_chat(chat.id)
         conversation_history = [
             {

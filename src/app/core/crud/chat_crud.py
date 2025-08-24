@@ -25,6 +25,7 @@ class ChatCRUD:
             return Chat(
                 id=str(chat_doc["_id"]),
                 user_id=chat_doc["user_id"],
+                user_phone=chat_doc.get("user_phone"),
                 created_at=chat_doc["created_at"],
                 is_active=chat_doc.get("is_active", True)
             )
@@ -41,9 +42,31 @@ class ChatCRUD:
             return Chat(
                 id=str(result.inserted_id),
                 user_id=f"user_{user_phone}",
+                user_phone=user_phone,
                 created_at=chat_data["created_at"],
                 is_active=True
             )
+    
+    def update_chat_user_id(self, chat_id: str, user_id: str) -> bool:
+        """
+        Update the user_id of a chat
+        
+        Args:
+            chat_id: Chat ID
+            user_id: New user ID
+            
+        Returns:
+            bool: True if updated successfully, False otherwise
+        """
+        try:
+            result = self.collection.update_one(
+                {"_id": ObjectId(chat_id)},
+                {"$set": {"user_id": user_id}}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            print(f"Error updating chat user_id: {e}")
+            return False
     
     def get_chat_by_user_phone(self, user_phone: str) -> Optional[Chat]:
         """
@@ -55,6 +78,7 @@ class ChatCRUD:
             return Chat(
                 id=str(chat_doc["_id"]),
                 user_id=chat_doc["user_id"],
+                user_phone=chat_doc.get("user_phone"),
                 created_at=chat_doc["created_at"],
                 is_active=chat_doc.get("is_active", True)
             )
@@ -93,6 +117,7 @@ class ChatCRUD:
                 return Chat(
                     id=str(chat_doc["_id"]),
                     user_id=chat_doc["user_id"],
+                    user_phone=chat_doc.get("user_phone"),
                     created_at=chat_doc["created_at"],
                     is_active=chat_doc.get("is_active", True)
                 )
