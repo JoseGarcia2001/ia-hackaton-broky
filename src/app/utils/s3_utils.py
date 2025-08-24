@@ -39,11 +39,23 @@ def upload_file_to_s3(file_path: str, bucket_name: str = "broky-images", folder:
         # Crear la key completa (ruta en S3)
         s3_key = f"{folder}/{random_filename}"
         
-        # Subir el archivo
+        # Determinar el ContentType basado en la extensión
+        content_type = "application/octet-stream"  # Default
+        if file_extension.lower() in ['.png']:
+            content_type = "image/png"
+        elif file_extension.lower() in ['.jpg', '.jpeg']:
+            content_type = "image/jpeg"
+        elif file_extension.lower() in ['.gif']:
+            content_type = "image/gif"
+        elif file_extension.lower() in ['.pdf']:
+            content_type = "application/pdf"
+
+        # Subir el archivo con ContentType
         s3_client.upload_file(
             file_path,
             bucket_name,
             s3_key,
+            ExtraArgs={'ContentType': content_type}
         )
         
         # Construir la URL pública
