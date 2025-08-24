@@ -69,10 +69,10 @@ async def infobip_webhook(webhook_data: dict):
     infobip_service.send_message(message_data.get("from"), agent_response)
     
     # Save agent response to chat history
-    await chat_service.save_agent_response(chat_id, agent_response["message"])
+    await chat_service.save_agent_response(chat_id, agent_response.message)
 
     return MessageResponse(
-        message=agent_response.get("message"),
+        message=agent_response.message,
         status="success"
     )
 

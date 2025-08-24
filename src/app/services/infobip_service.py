@@ -48,7 +48,7 @@ class InfobipService:
         """
         Send a message according to the type of message
         """
-        return self.mapper_send_message[message.get("type")](to, message.get("message"))
+        return self.mapper_send_message[message.type](to, message.message)
 
     def send_text_message(self, to: str, text: str) -> WhatsAppResponse:
         """
