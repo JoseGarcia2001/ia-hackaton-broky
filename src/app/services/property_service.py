@@ -39,6 +39,8 @@ class PropertyService:
             "address": info.address,
             "type": info.type,
             "value": float(info.price) if info.price else 0.0,
+            "description": info.description,
+            "images": info.pictures or [],
             "owner_id": owner_id,
         }
         
