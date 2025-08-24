@@ -226,3 +226,16 @@ class ChatService:
         
         # Get user by phone
         return self.user_crud.get_user_by_phone(chat.user_phone)
+    
+    def update_chat(self, chat_id: str, update_data: Dict[str, Any]) -> bool:
+        """
+        Update chat with arbitrary fields
+        
+        Args:
+            chat_id: ID of the chat
+            update_data: Dictionary with fields to update
+            
+        Returns:
+            bool: True if updated successfully, False otherwise
+        """
+        return self.chat_crud.update_chat(chat_id, update_data)

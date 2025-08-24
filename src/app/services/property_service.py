@@ -52,9 +52,23 @@ class PropertyService:
         property_obj = self.property_crud.get_property_by_address(address)
         return property_obj
     
-    def update_property(self, property_id: str, update_data: Dict[str, Any]) -> bool:
-        """Update property with partial fields"""
-        return self.property_crud.update_property_partial(property_id, update_data)
+    def update_property(self, property_id: str, info: PropertyInfo) -> bool:
+        """Update property with PropertyInfo data"""
+        update_data = {}
+        if info.address:
+            update_data["address"] = info.address
+        if info.type:
+            update_data["type"] = info.type
+        if info.price:
+            update_data["value"] = float(info.price)
+        if info.description:
+            update_data["description"] = info.description
+        if info.pictures:
+            update_data["images"] = info.pictures
+        
+        if update_data:
+            return self.property_crud.update_property_partial(property_id, update_data)
+        return True
     
     def get_progress_info(self, property_id: str) -> Optional[PropertyProgress]:
         """Get property progress info with missing fields"""
