@@ -106,7 +106,7 @@ def generate_qr(state: Annotated[dict, InjectedState]) -> Optional[QRResponse]:
     chat_service = ChatService()
     user_data = chat_service.get_user_from_chat(chat_id)
     property_id = chat_service.get_property_id_from_chat(chat_id)
-    phone_number = settings.INFOBIP_WHATSAPP_FROM
+    phone_number = user_data.phone_number
     property_service = PropertyService()
     property_obj = property_service.get_property_full_info(property_id)
     address = property_obj.address
@@ -114,7 +114,7 @@ def generate_qr(state: Annotated[dict, InjectedState]) -> Optional[QRResponse]:
     qr_position = None
     qr_size = None
     path = integration_service.create_property_qr_image(
-        phone_number=phone_number,
+        phone_number=settings.INFOBIP_WHATSAPP_FROM,
         property_message=f"¡Hola! 🏠 Me gustaría obtener información sobre la propiedad ubicada en {address}",
         replace_center_qr=True,
         qr_position=qr_position,
