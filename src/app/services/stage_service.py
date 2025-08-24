@@ -35,6 +35,7 @@ class StageService:
         logger.info(f"Updating seller business stage for chat {chat_id} to {new_stage}")
         # Get chat to find property_id
         chat_doc = self.db.chats.find_one({"_id": chat_id})
+        logger.info(f"Chat document: {chat_doc}")
         if not chat_doc or not chat_doc.get("property_id"):
             logger.warning(f"No property_id found for chat {chat_id}")
             return False
