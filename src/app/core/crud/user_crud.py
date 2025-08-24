@@ -137,13 +137,13 @@ class UserCRUD:
             end_time: End of the time period to check
             
         Returns:
-            bool: True if user is available (no conflicts), False if busy
+            bool: True if user is available (slot matches), False if not available
         """
         logger.info(f"Checking availability for user {user_id}")
         try:
             user_doc = self.collection.find_one({"_id": ObjectId(user_id)})
             if not user_doc or not user_doc.get("availability"):
-                return True
+                return False  # No availability slots = not available
             
             # Convert datetime to day_of_week and time for matching
             requested_day = start_time.weekday()  # 0=Monday, 6=Sunday
@@ -155,13 +155,13 @@ class UserCRUD:
                 slot_start_time = datetime.strptime(slot["start_time"], "%H:%M:%S").time()
                 slot_end_time = datetime.strptime(slot["end_time"], "%H:%M:%S").time()
                 
-                # Check if it's the same day and times overlap
+                # Check if it's the same day and the requested time fits within the available slot
                 if (requested_day == slot_day and 
-                    requested_start_time < slot_end_time and 
-                    requested_end_time > slot_start_time):
-                    return False  # Conflict found - slot is busy
+                    requested_start_time >= slot_start_time and 
+                    requested_end_time <= slot_end_time):
+                    return True  # Available - found matching slot
             
-            return True  # No conflicts found
+            return False  # Not available - no matching slots found
         except Exception as e:
             print(f"Error checking availability: {e}")
             return False
