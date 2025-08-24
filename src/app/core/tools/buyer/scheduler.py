@@ -151,13 +151,16 @@ def notify_seller(state: Annotated[dict, InjectedState]) -> str:
 
     if not visit:
         return "No se encontró la visita"
+
+    seller_id = property.owner_id
+    seller = UserService().get_user_by_id(seller_id)
     
     # Obtener datos formateados para la plantilla usando el service
     template_data = visit_service.get_visit_template_data(visit)
     
     # Enviar plantilla de la cita con datos reales
     InfobipService().send_template_message(
-        to=user.phone,
+        to=seller.phone,
         template_name="schedule_buyer_notification",
         language="es",
         template_data={
