@@ -20,7 +20,7 @@ class StageService:
         """Get seller business stage from chat context"""
         logger.info(f"Getting seller business stage for chat {chat_id}")
         # Get chat to find property_id
-        chat_doc = self.db.chats.find_one({"_id": chat_id})
+        chat_doc = self.db.chats.find_one({"_id": ObjectId(chat_id)})
         if not chat_doc or not chat_doc.get("property_id"):
             return SellerStage.REGISTRATION
         
