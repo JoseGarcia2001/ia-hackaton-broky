@@ -8,7 +8,7 @@ Defines the RegisterAgent class, which is responsible for registering sellers in
 
 from src.app.core.agent.main import Agent, AgentState
 from src.app.core.tools.general import update_business_stage
-from src.app.core.tools.register import get_user_info, save_property_info, get_remaining_info, generate_qr
+from src.app.core.tools.register import get_user_info, save_property_info, get_remaining_info
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
