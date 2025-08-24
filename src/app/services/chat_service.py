@@ -3,6 +3,7 @@ from datetime import datetime
 import re
 from ..models.message import MessageSender, MessageType, Message
 from ..models.user import User
+from ..models.chat import Chat
 from ..core.database import get_db
 from ..core.crud.chat_crud import ChatCRUD
 from ..core.crud.user_crud import UserCRUD
@@ -226,6 +227,18 @@ class ChatService:
         
         # Get user by phone
         return self.user_crud.get_user_by_phone(chat.user_phone)
+    
+    def get_chat_by_id(self, chat_id: str) -> Optional[Chat]:
+        """
+        Get chat by ID
+        
+        Args:
+            chat_id: ID of the chat to retrieve
+            
+        Returns:
+            Chat object if found, None otherwise
+        """
+        return self.chat_crud.get_chat_by_id(chat_id)
     
     def update_chat(self, chat_id: str, update_data: Dict[str, Any]) -> bool:
         """
