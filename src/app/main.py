@@ -5,6 +5,8 @@ from .services.infobip_service import InfobipService
 from .services.chat_service import ChatService
 from .core.agents_factory import AgentsFactory
 from .core.agent.main import Agent, AgentResponse
+from .utils.logger import logger
+
 app = FastAPI(
     title="IA Hackaton Broky API",
     description="API desarrollada para el hackaton con FastAPI",
@@ -37,6 +39,7 @@ async def root():
 # Webhook endpoint for Infobip
 @app.post("/webhook")
 async def infobip_webhook(webhook_data: dict):
+    logger.info(f"Event received: {webhook_data}")
     # recibir mensaje de infobip este es el webhook
     infobip_service = InfobipService()
     chat_service = ChatService()
@@ -49,9 +52,6 @@ async def infobip_webhook(webhook_data: dict):
     user_type = chat_data["user_type"]
     conversation_history = chat_data["conversation_history"]
     chat_id = chat_data["chat_id"]
-
-    print(f"User type: {user_type}")    
-    print(f"Conversation: {conversation_history}")
     
     # Get agent
     context = {"chat_id": chat_id}

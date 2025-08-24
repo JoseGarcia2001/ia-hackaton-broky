@@ -11,6 +11,7 @@ from langgraph.prebuilt.chat_agent_executor import AgentStateWithStructuredRespo
 
 from pydantic import BaseModel, Field
 from enum import Enum
+from src.app.utils.logger import logger
 
 
 class AgentState(AgentStateWithStructuredResponse):
@@ -68,6 +69,7 @@ class Agent(ABC):
         Returns:
             str: The agent's response to the user's message.
         """
+        logger.info(f"Processing agent {self.__class__.__name__}")
         agents: list[CompiledStateGraph] = self.get_agents()
 
         model = init_chat_model("openai:gpt-4.1", temperature=0)

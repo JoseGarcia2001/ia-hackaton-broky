@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 
 from ...models import User, UserRole, AvailabilitySlot
+from ...utils.logger import logger
 
 
 class UserCRUD:
@@ -17,6 +18,7 @@ class UserCRUD:
         Determine user type based on phone number
         Check if user exists in database - registered users are sellers, others are buyers
         """
+        logger.info(f"Getting user type for phone {phone_number}")
         # Check if user exists in database
         user_doc = self.collection.find_one({"phone": phone_number})
         
@@ -29,6 +31,7 @@ class UserCRUD:
         """
         Get existing user or create new one in database
         """
+        logger.info(f"Getting or creating user for phone {phone}")
         # Try to find existing user
         user_doc = self.collection.find_one({"phone": phone})
         
@@ -70,6 +73,7 @@ class UserCRUD:
         Returns:
             Optional[User]: User object if found, None otherwise
         """
+        logger.info(f"Getting user by id {user_id}")
         try:
             user_doc = self.collection.find_one({"_id": ObjectId(user_id)})
             if user_doc:
@@ -91,6 +95,7 @@ class UserCRUD:
         Returns:
             bool: True if successfully added, False otherwise
         """
+        logger.info(f"Adding availability slots to user {user_id}")
         try:
             slots_data = [slot.dict() for slot in availability_slots]
             result = self.collection.update_one(
@@ -117,6 +122,7 @@ class UserCRUD:
         Returns:
             bool: True if user is available (no conflicts), False if busy
         """
+        logger.info(f"Checking availability for user {user_id}")
         try:
             user_doc = self.collection.find_one({"_id": ObjectId(user_id)})
             if not user_doc or not user_doc.get("availability"):
@@ -144,6 +150,7 @@ class UserCRUD:
         Returns:
             List[AvailabilitySlot]: List of availability slots
         """
+        logger.info(f"Getting user availability for user {user_id}")
         try:
             user_doc = self.collection.find_one({"_id": ObjectId(user_id)})
             if not user_doc or not user_doc.get("availability"):
@@ -164,6 +171,7 @@ class UserCRUD:
         Returns:
             Optional[User]: User object if found, None otherwise
         """
+        logger.info(f"Getting user by phone {phone}")
         try:
             user_doc = self.collection.find_one({"phone": phone})
             if user_doc:
@@ -176,6 +184,7 @@ class UserCRUD:
     
     def update_user_partial(self, user_id: str, update_data: Dict[str, Any]) -> bool:
         """Update user with partial fields"""
+        logger.info(f"Updating user {user_id} with {update_data}")
         try:
             update_data["updated_at"] = datetime.utcnow()
             result = self.collection.update_one(
@@ -189,6 +198,7 @@ class UserCRUD:
     
     def get_user_missing_fields(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Get user progress info with missing fields"""
+        logger.info(f"Getting user missing fields for user {user_id}")
         try:
             user_doc = self.collection.find_one({"_id": ObjectId(user_id)})
             if not user_doc:

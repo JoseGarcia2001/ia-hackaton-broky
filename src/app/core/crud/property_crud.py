@@ -6,6 +6,7 @@ from bson.errors import InvalidId
 
 from ...models import Property
 from ...models.business_stage import SellerStage
+from ...utils.logger import logger
 
 
 class PropertyCRUD:
@@ -16,6 +17,7 @@ class PropertyCRUD:
     
     def create_property(self, property_data: Dict[str, Any]) -> str:
         """Create a new property with initial data"""
+        logger.info(f"Creating property with data {property_data}")
         property_data["created_at"] = datetime.utcnow()
         property_data["updated_at"] = datetime.utcnow()
         
@@ -24,6 +26,7 @@ class PropertyCRUD:
     
     def get_property_id_by_address(self, address: str) -> Optional[str]:
         """Get property ID by address"""
+        logger.info(f"Getting property ID by address {address}")
         property_doc = self.collection.find_one({"address": address}, {"_id": 1})
         if property_doc:
             return str(property_doc["_id"])
@@ -31,6 +34,7 @@ class PropertyCRUD:
     
     def get_property_by_id(self, property_id: str) -> Optional[Property]:
         """Get a property by ID"""
+        logger.info(f"Getting property by ID {property_id}")
         try:
             obj_id = ObjectId(property_id)
         except InvalidId:
@@ -44,6 +48,7 @@ class PropertyCRUD:
     
     def get_property_by_address(self, address: str) -> Optional[Property]:
         """Get a property by address"""
+        logger.info(f"Getting property by address {address}")
         property_doc = self.collection.find_one({"address": address})
         if property_doc:
             property_doc["_id"] = str(property_doc["_id"])
@@ -52,6 +57,7 @@ class PropertyCRUD:
     
     def update_property_partial(self, property_id: str, update_data: Dict[str, Any]) -> bool:
         """Update property with partial fields"""
+        logger.info(f"Updating property {property_id} with {update_data}")
         try:
             obj_id = ObjectId(property_id)
         except InvalidId:
@@ -78,6 +84,7 @@ class PropertyCRUD:
     
     def get_property_missing_fields(self, property_id: str) -> Optional[Dict[str, Any]]:
         """Get property missing fields for progress tracking"""
+        logger.info(f"Getting property missing fields for property {property_id}")
         property_obj = self.get_property_by_id(property_id)
         if not property_obj:
             return None
@@ -109,6 +116,7 @@ class PropertyCRUD:
     
     def get_property_stage(self, property_id: str) -> SellerStage:
         """Get the business stage of a property"""
+        logger.info(f"Getting property stage for property {property_id}")
         property_doc = self.collection.find_one({"_id": ObjectId(property_id)})
         if property_doc:
             return SellerStage(property_doc.get("business_stage", SellerStage.REGISTRATION))
@@ -116,6 +124,7 @@ class PropertyCRUD:
     
     def update_property_stage(self, property_id: str, new_stage: SellerStage) -> bool:
         """Update the business stage of a property"""
+        logger.info(f"Updating property stage for property {property_id} to {new_stage}")
         result = self.collection.update_one(
             {"_id": ObjectId(property_id)},
             {"$set": {"business_stage": new_stage.value}}

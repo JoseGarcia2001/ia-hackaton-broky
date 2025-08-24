@@ -5,6 +5,7 @@ from src.app.core.agent.seller.visits import VisitsAgent
 from src.app.core.agent.buyer.scheduler import SchedulerAgent
 from src.app.services.stage_service import StageService
 from src.app.models.business_stage import SellerStage, BuyerStage
+from src.app.utils.logger import logger
 
 
 class AgentsFactory:
@@ -49,6 +50,7 @@ class AgentsFactory:
         """
         Gets the agent for a specific user type.
         """
+        logger.info(f"Getting agent for user type {user_type}")
         if context is None:
             context = {}
             

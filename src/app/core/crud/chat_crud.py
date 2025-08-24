@@ -5,6 +5,7 @@ from datetime import datetime
 
 from ...models import Chat
 from ...models.business_stage import BuyerStage
+from ...utils.logger import logger
 
 
 class ChatCRUD:
@@ -17,6 +18,7 @@ class ChatCRUD:
         """
         Get existing chat or create new one for a user by phone number
         """
+        logger.info(f"Getting or creating chat for user {user_phone}")
         # Try to find existing chat
         chat_doc = self.collection.find_one({"user_phone": user_phone})
         
@@ -58,6 +60,7 @@ class ChatCRUD:
         Returns:
             bool: True if updated successfully, False otherwise
         """
+        logger.info(f"Updating chat user_id for chat {chat_id} to {user_id}")
         try:
             result = self.collection.update_one(
                 {"_id": ObjectId(chat_id)},
@@ -72,6 +75,7 @@ class ChatCRUD:
         """
         Get existing chat by user phone number
         """
+        logger.info(f"Getting chat by user phone {user_phone}")
         chat_doc = self.collection.find_one({"user_phone": user_phone})
         
         if chat_doc:
@@ -87,6 +91,7 @@ class ChatCRUD:
     
     def get_chat_stage(self, chat_id: str) -> Optional[BuyerStage]:
         """Get the business stage of a chat"""
+        logger.info(f"Getting chat stage for chat {chat_id}")
         chat_doc = self.collection.find_one({"_id": ObjectId(chat_id)})
         if chat_doc and "business_stage" in chat_doc:
             return BuyerStage(chat_doc["business_stage"])
@@ -94,6 +99,7 @@ class ChatCRUD:
     
     def update_chat_stage(self, chat_id: str, new_stage: BuyerStage) -> bool:
         """Update the business stage of a chat"""
+        logger.info(f"Updating chat stage for chat {chat_id} to {new_stage}")
         result = self.collection.update_one(
             {"_id": ObjectId(chat_id)},
             {"$set": {"business_stage": new_stage.value}}
@@ -110,6 +116,7 @@ class ChatCRUD:
         Returns:
             Optional[Chat]: Chat object if found, None otherwise
         """
+        logger.info(f"Getting chat by id {chat_id}")
         try:
             chat_doc = self.collection.find_one({"_id": ObjectId(chat_id)})
             
@@ -138,6 +145,7 @@ class ChatCRUD:
         Returns:
             bool: True if updated successfully, False otherwise
         """
+        logger.info(f"Updating chat {chat_id} with {update_data}")
         try:
             if not update_data:
                 return False

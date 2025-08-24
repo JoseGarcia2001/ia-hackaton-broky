@@ -15,6 +15,7 @@ from ...services.infobip_service import InfobipService
 from ...models.property import Property
 from ...models.user import User
 from ...utils.s3_utils import upload_file_to_s3
+from ...utils.logger import logger
 
 
 @tool
@@ -24,6 +25,7 @@ def get_user_info(state: Annotated[dict, InjectedState]) -> str:
 
     Usa esta herramienta para crear mensajes más personalizados para el usuario.
     """
+    logger.info("Getting user info")
     chat_id = state.get("chat_id")
     chat_service = ChatService()
     user = chat_service.get_user_from_chat(chat_id)
@@ -36,6 +38,7 @@ def save_property_info(info: PropertyInfo, state: Annotated[dict, InjectedState]
     Herramienta útil para guardar la información de la propiedad en la base de datos.
     Checks for existing property first to prevent duplicates.
     """
+    logger.info("Saving property info")
     chat_id = state.get("chat_id")
     property_service = PropertyService()
     chat_service = ChatService()
@@ -70,6 +73,7 @@ def get_remaining_info(state: Annotated[dict, InjectedState]) -> Optional[Proper
     """
     Herramienta útil para obtener la información que falta para completar el registro de la propiedad.
     """
+    logger.info("Getting remaining info")
     # cast to str chat_id
     chat_id = state.get("chat_id") or ""
     
@@ -96,6 +100,7 @@ def generate_qr(state: Annotated[dict, InjectedState]) -> Optional[QRResponse]:
     """
     Herramienta útil para generar el código QR asociado a la propiedad.
     """
+    logger.info("Generating QR")
     chat_id = state.get("chat_id")
     chat_service = ChatService()
     user_data = chat_service.get_user_from_chat(chat_id)

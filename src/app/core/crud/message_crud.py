@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 
 from ...models import Message, MessageType, MessageSender
+from ...utils.logger import logger
 
 
 class MessageCRUD:
@@ -16,6 +17,7 @@ class MessageCRUD:
         """
         Add message to MongoDB
         """
+        logger.info(f"Adding message to chat {chat_id}")
         # Determine message type
         content_type = processed_message.get("type", "text").lower()
         if content_type == "text":
@@ -59,6 +61,7 @@ class MessageCRUD:
         """
         Get all messages for a specific chat
         """
+        logger.info(f"Getting messages by chat {chat_id}")
         # Query messages from MongoDB
         message_docs = self.collection.find(
             {"chat_id": chat_id}

@@ -9,6 +9,7 @@ from ...models.business_stage import SellerStage, BuyerStage
 from ...models.user import AvailabilitySlot
 from ...services.stage_service import StageService
 from ...services.user_service import UserService
+from ...utils.logger import logger
 
 
 @tool
@@ -23,6 +24,7 @@ def get_business_stage(user_type: str, state: Annotated[dict, InjectedState]) ->
     Returns:
         Dictionary with stage information and status
     """
+    logger.info(f"Getting business stage for user type {user_type}")
     try:
         chat_id = state.get("chat_id")
         
@@ -66,6 +68,7 @@ def save_availability(availability_slots: Annotated[List[AvailabilitySlot], "Lis
     Returns:
         Dictionary with success status and message
     """
+    logger.info("Saving availability")
     try:
         chat_id = state.get("chat_id")
         if not chat_id:
@@ -112,6 +115,7 @@ def update_business_stage(
     Returns:
         Dictionary with update result and stage information
     """
+    logger.info(f"Updating business stage for user type {user_type}")
     try:
         chat_id = state.get("chat_id")
         stage_service = StageService()

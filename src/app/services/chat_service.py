@@ -10,6 +10,8 @@ from ..core.crud.chat_crud import ChatCRUD
 from ..core.crud.user_crud import UserCRUD
 from ..core.crud.message_crud import MessageCRUD
 from ..core.crud.property_crud import PropertyCRUD
+from ..utils.logger import logger
+
 
 class ChatService:
     """Service layer for chat operations"""
@@ -46,6 +48,7 @@ class ChatService:
         Returns:
             Dict containing user_type, latest message, and conversation history
         """
+        logger.info("Processing chat message")
         # Step 1: Get or create user first
         user_phone = message_data.get("from", "")
         user = self.user_crud.get_or_create_user(user_phone)
@@ -116,6 +119,7 @@ class ChatService:
         Returns:
             Dict containing chat info and all messages
         """
+        logger.info(f"Getting conversation history for user {user_phone}")
         # Get chat for user
         chat = self.chat_crud.get_chat_by_user_phone(user_phone)
         
@@ -153,6 +157,7 @@ class ChatService:
         Returns:
             Message: The saved message object
         """
+        logger.info(f"Saving agent response to chat {chat_id}")
         # Create message document for agent response
         message_doc = {
             "chat_id": chat_id,
@@ -220,6 +225,7 @@ class ChatService:
         Returns:
             Optional[User]: User object if found, None otherwise
         """
+        logger.info(f"Getting user from chat {chat_id}")
         # Get chat
         chat = self.chat_crud.get_chat_by_id(chat_id)
         if not chat or not chat.user_phone:
@@ -239,6 +245,7 @@ class ChatService:
             Optional[Property]: Property object if found, None otherwise
         """
         from ..core.crud.property_crud import PropertyCRUD
+        logger.info(f"Getting property from chat {chat_id}")
 
         chat = self.chat_crud.get_chat_by_id(chat_id)
         if not chat or not chat.property_id:
@@ -262,6 +269,7 @@ class ChatService:
         Returns:
             Chat object if found, None otherwise
         """
+        logger.info(f"Getting chat by id {chat_id}")
         return self.chat_crud.get_chat_by_id(chat_id)
     
     def update_chat(self, chat_id: str, update_data: Dict[str, Any]) -> bool:
@@ -275,4 +283,5 @@ class ChatService:
         Returns:
             bool: True if updated successfully, False otherwise
         """
+        logger.info(f"Updating chat {chat_id} with {update_data}")
         return self.chat_crud.update_chat(chat_id, update_data)

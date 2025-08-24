@@ -10,6 +10,7 @@ from ....services.chat_service import ChatService
 from ....services.user_service import UserService, BuyerInfo, BuyerProgress
 from ....services.visit_service import VisitService
 from ....core.crud.property_crud import PropertyCRUD
+from ....utils.logger import logger
 
 
 @tool
@@ -17,6 +18,7 @@ def save_buyer_info(info: BuyerInfo, state: Annotated[dict, InjectedState]) -> s
     """
     Herramienta útil para registrar la información del comprador.
     """
+    logger.info("Saving buyer info")
     chat_id = state.get("chat_id")
     user_service = UserService()
     chat_service = ChatService()
@@ -40,6 +42,7 @@ def get_remaining_buyer_info(state: Annotated[dict, InjectedState]) -> Optional[
     """
     Herramienta útil para obtener la información que se necesita del posible comprador.
     """
+    logger.info("Getting remaining buyer info")
     chat_id = state.get("chat_id")
     
     # Get user from chat service
@@ -64,6 +67,7 @@ def get_seller_availability(state: Annotated[dict, InjectedState]) -> str:
     """
     Herramienta útil para obtener la disponibilidad del vendedor.
     """
+    logger.info("Getting seller availability")
     chat_id = state.get("chat_id")
     try:
         chat_service = ChatService()
@@ -95,7 +99,7 @@ def save_visit_info(visit_info: str, state: Annotated[dict, InjectedState]) -> s
     """
     Herramienta útil para registrar la información de la visita.
     """
-
+    logger.info("Saving visit info")
     return "Información de la visita registrada correctamente"
 
 
@@ -104,6 +108,7 @@ def notify_seller(state: Annotated[dict, InjectedState]) -> str:
     """
     Herramienta útil para notificar al vendedor sobre la visita.
     """
+    logger.info("Notifying seller")
     from src.app.services.infobip_service import InfobipService
 
     chat_id = state.get("chat_id")

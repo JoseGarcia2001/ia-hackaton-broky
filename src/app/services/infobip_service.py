@@ -12,7 +12,7 @@ from ..models.whatsapp import (
 )
 from ..utils.openai import OpenIA
 
-logger = logging.getLogger(__name__)
+from ..utils.logger import logger
 
 class InfobipService:
     """Service for interacting with Infobip WhatsApp API"""
@@ -48,6 +48,7 @@ class InfobipService:
         """
         Send a message according to the type of message
         """
+        logger.info(f"Sending message to {to}")
         return self.mapper_send_message[message.type](to, message.message)
 
     def send_text_message(self, to: str, text: str) -> WhatsAppResponse:
@@ -61,6 +62,7 @@ class InfobipService:
         Returns:
             WhatsAppResponse with API response
         """
+        logger.info(f"Sending text message to {to}")
         try:
             message_data = {
                 "from": self.whatsapp_from,
@@ -102,6 +104,7 @@ class InfobipService:
         Returns:
             WhatsAppResponse with API response
         """
+        logger.info(f"Sending image message to {to}")
         try:
             message_data = {
                 "from": self.whatsapp_from,
@@ -151,6 +154,7 @@ class InfobipService:
         Returns:
             WhatsAppTemplateResponse with API response containing list of messages
         """
+        logger.info(f"Sending template message to {to}")
         try:
             header = {}
             template_request = {}
@@ -214,8 +218,8 @@ class InfobipService:
         Returns:
             Dict with processed message information
         """
+        logger.info("Received webhook data!")
         try:
-            print(f"Received webhook data: {webhook_data}")
             # Validate webhook structure according to Infobip documentation
             if not webhook_data.get("results"):
                 logger.warning("Invalid webhook: missing 'results' field")
@@ -244,6 +248,7 @@ class InfobipService:
         Returns:
             Dict with processed message info or None if invalid
         """
+        logger.info("Processing single message")
         try:
             # Extract data according to Infobip webhook structure
             message_id = result.get("messageId")
@@ -294,6 +299,7 @@ class InfobipService:
         Returns:
             Dict with extracted content or None if invalid
         """
+        logger.info(f"Extracting content for type {message_type}")
         try:
             content = {}
             
@@ -347,6 +353,7 @@ class InfobipService:
         """
         Process audio message
         """
+        logger.info("Processing audio message")
         temp_file_path = os.path.join(tempfile.gettempdir(), "audio_whatsapp.mp3")
         file_path = self.save_file(message_data.get("url"), temp_file_path)
         openia = OpenIA()
@@ -356,4 +363,5 @@ class InfobipService:
         """
         Process message type
         """
+        logger.info("Processing message type")
         return self.mapper_process_message_type[message_data.get("type")](message_data)
