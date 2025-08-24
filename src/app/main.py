@@ -65,10 +65,6 @@ async def infobip_webhook(webhook_data: dict):
     }
     agent_response: AgentResponse = agent.process(agent_context)
 
-    agent_response = {
-        "message": "Gracias por tu mensaje, en breve te responderemos",
-        "type": "text"
-    }
     # # Send response to Infobip
     infobip_service.send_message(message_data.get("from"), agent_response)
     
