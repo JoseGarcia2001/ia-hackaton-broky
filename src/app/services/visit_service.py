@@ -19,7 +19,7 @@ class VisitInfo(BaseModel):
     buyer_id: str = Field(description="ID del comprador")
     seller_id: str = Field(description="ID del vendedor")
     scheduled_at: datetime = Field(description="Fecha y hora programada para la visita")
-    notes: Optional[str] = Field(None, description="Notas adicionales sobre la visita")
+    notes: Optional[str] = Field(None, description="Notas adicionales")
 
 
 class VisitTemplateData(BaseModel):
