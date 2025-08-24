@@ -124,6 +124,7 @@ class ChatCRUD:
                 return Chat(
                     id=str(chat_doc["_id"]),
                     user_id=chat_doc["user_id"],
+                    property_id=chat_doc.get("property_id"),
                     user_phone=chat_doc.get("user_phone"),
                     created_at=chat_doc["created_at"],
                     is_active=chat_doc.get("is_active", True)
