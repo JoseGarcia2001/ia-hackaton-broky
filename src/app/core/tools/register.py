@@ -16,20 +16,18 @@ from ...models.property import Property
 from ...models.user import User
 from ...utils.s3_utils import upload_file_to_s3
 
-class UserInfo(BaseModel):
-    name: str
-    email: str
-
 
 @tool
-def get_user_info() -> UserInfo:
+def get_user_info(state: Annotated[dict, InjectedState]) -> str:
     """
     Herramienta útil para obtener la información del usuario que quiere registrar su inmueble.
 
     Usa esta herramienta para crear mensajes más personalizados para el usuario.
     """
-    # TODO: Implement the tool to get the user info
-    return UserInfo(name="Juan Perez", email="juan.perez@gmail.com").model_dump()
+    chat_id = state.get("chat_id")
+    chat_service = ChatService()
+    user = chat_service.get_user_from_chat(chat_id)
+    return user.name
 
 
 @tool
