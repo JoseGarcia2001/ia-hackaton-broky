@@ -10,10 +10,10 @@ class UserRole(str, Enum):
 
 
 class AvailabilitySlot(BaseModel):
-    """Model for seller availability slots (busy times)"""
-    start_time: datetime = Field(..., description="Start time of busy period")
-    end_time: datetime = Field(..., description="End time of busy period")
-    description: Optional[str] = Field(None, description="Description of busy period")
+    """Model for time slots"""
+    start_time: datetime = Field(..., description="Start time of time slot")
+    end_time: datetime = Field(..., description="End time of time slot")
+    description: Optional[str] = Field(None, description="Description of time slot")
 
 
 class User(BaseModel):
@@ -23,7 +23,7 @@ class User(BaseModel):
     phone: str = Field(..., description="User's phone number")
     role: UserRole = Field(..., description="User role: buyer or seller")
     availability: Optional[List[AvailabilitySlot]] = Field(
-        None, description="Busy times (only for sellers)"
+        None, description="Availability slots (only for sellers)"
     )
     interests: Optional[List[str]] = Field(
         None, description="Property interests (only for buyers)"

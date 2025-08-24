@@ -2,14 +2,14 @@
 Defines the tools for the buyer scheduler agent
 """
 
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List, Dict, Any
 from langchain.tools import tool
 from langgraph.prebuilt import InjectedState
-from ....core.database import get_db
 from ....services.chat_service import ChatService
 from ....services.user_service import UserService, BuyerInfo, BuyerProgress
-from ....services.visit_service import VisitService
-from ....core.crud.property_crud import PropertyCRUD
+from ....services.visit_service import VisitService, VisitInfo
+from ....models.user import AvailabilitySlot
+from ....models.visit import VisitStatus
 from ....utils.logger import logger
 
 
@@ -63,44 +63,53 @@ def get_remaining_buyer_info(state: Annotated[dict, InjectedState]) -> Optional[
 
 
 @tool
-def get_seller_availability(state: Annotated[dict, InjectedState]) -> str:
+def get_seller_availability(state: Annotated[dict, InjectedState]) -> List[AvailabilitySlot]:
     """
     Herramienta útil para obtener la disponibilidad del vendedor.
     """
     logger.info("Getting seller availability")
     chat_id = state.get("chat_id")
+    
     try:
+        # Get the property associated with the chat
         chat_service = ChatService()
-        property_id = chat_service.get_property_id_from_chat(chat_id)
-        db = get_db()
-        property_crud = PropertyCRUD(db)
-        property_obj = property_crud.get_property_by_id(property_id)
-        days_str = ", ".join(property_obj.available_days)
-        if len(property_obj.available_days) > 1:
-            days_str = (
-                ", ".join(property_obj.available_days[:-1])
-                + " y "
-                + property_obj.available_days[-1]
-            )
-        return {
-            "success": True,
-            "message": f"El vendedor está disponible los {days_str} {property_obj.available_hours}",
-        }
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        return {
-            "success": False,
-            "error": str(e),
-            "stage": None,
-        }
+        property_obj = chat_service.get_property_from_buyer_chat_id(chat_id)
+        
+        if not property_obj:
+            logger.warning(f"No property found for chat_id: {chat_id}")
+            return []
+        
+        # Get property availability through visit service
+        visit_service = VisitService()
+        availability_slots = visit_service.get_property_availability(property_obj.id)
+        
+        return availability_slots
+        
+    except Exception as e:
+        logger.error(f"Error getting seller availability: {e}")
+        return []
 
 
 @tool
-def save_visit_info(visit_info: str, state: Annotated[dict, InjectedState]) -> str:
+def save_visit_info(requested_slot: AvailabilitySlot, state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
     """
     Herramienta útil para registrar la información de la visita.
     """
     logger.info("Saving visit info")
-    return "Información de la visita registrada correctamente"
+    try:
+        chat_id = state.get("chat_id")
+        visit_service = VisitService()
+        
+        result = visit_service.attempt_visit_creation(chat_id, requested_slot)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error saving visit info: {e}")
+        return {
+            "success": False, 
+            "message": "Error interno del sistema", 
+            "available_slots": []
+        }
 
 
 @tool

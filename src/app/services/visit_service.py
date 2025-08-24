@@ -1,11 +1,14 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 from datetime import datetime
 
 from ..core.crud.visit_crud import VisitCRUD
 from ..core.crud.user_crud import UserCRUD
+from ..core.crud.property_crud import PropertyCRUD
+from ..core.crud.chat_crud import ChatCRUD
 from ..core.database import get_db
 from ..models.visit import Visit, VisitStatus
+from ..models.user import AvailabilitySlot
 
 
 class VisitInfo(BaseModel):
@@ -36,6 +39,8 @@ class VisitService:
         db = get_db()
         self.visit_crud = VisitCRUD(db)
         self.user_crud = UserCRUD(db)
+        self.property_crud = PropertyCRUD(db)
+        self.chat_crud = ChatCRUD(db)
     
     def get_visit_by_property_and_buyer(self, property_id: str, buyer_id: str) -> Optional[Visit]:
         """Get visit by property and buyer IDs"""
@@ -132,3 +137,152 @@ class VisitService:
             update_data["notes"] = notes
         
         return self.visit_crud.update_visit(visit_id, update_data)
+
+    def get_property_availability(self, property_id: str) -> List[AvailabilitySlot]:
+        """
+        Get availability slots for a property by getting the property owner's availability
+        
+        Args:
+            property_id: ID of the property
+            
+        Returns:
+            List[AvailabilitySlot]: List of availability slots from the property owner
+        """
+        try:
+            # Get property to find the owner
+            property_obj = self.property_crud.get_property_by_id(property_id)
+            if not property_obj or not property_obj.owner_id:
+                return []
+            
+            # Get owner's availability
+            return self.user_crud.get_user_availability(property_obj.owner_id)
+            
+        except Exception as e:
+            print(f"Error getting property availability: {e}")
+            return []
+    
+    
+    def check_seller_availability_conflict(self, seller_id: str, requested_slot: AvailabilitySlot) -> bool:
+        """
+        Check if the requested slot conflicts with seller's availability slots
+        
+        Args:
+            seller_id: ID of the seller
+            requested_slot: Requested time slot for the visit
+            
+        Returns:
+            bool: True if there are conflicts (seller is busy), False if available
+        """
+        try:
+            # Use user CRUD to check availability directly
+            return not self.user_crud.check_availability(
+                seller_id, 
+                requested_slot.start_time, 
+                requested_slot.end_time
+            )
+            
+        except Exception as e:
+            print(f"Error checking seller availability: {e}")
+            return True  # Return True (conflict) on error to be safe
+    
+    def attempt_visit_creation(self, chat_id: str, requested_slot: AvailabilitySlot) -> dict:
+        """
+        Attempt to create a visit after checking availability conflicts
+        
+        Args:
+            chat_id: Chat ID to get property and buyer info
+            requested_slot: Requested time slot for the visit
+            
+        Returns:
+            dict: Success/failure with message and available_slots if needed
+        """
+        try:
+            # Get chat using CRUD
+            chat = self.chat_crud.get_chat_by_id(chat_id)
+            if not chat:
+                return {"success": False, "message": "No se encontró el chat", "available_slots": []}
+            
+            # Get property from chat property_id
+            if not chat.property_id:
+                return {"success": False, "message": "No se encontró la propiedad", "available_slots": []}
+            
+            property_obj = self.property_crud.get_property_by_id(chat.property_id)
+            if not property_obj:
+                return {"success": False, "message": "No se encontró la propiedad", "available_slots": []}
+            
+            # Get buyer from chat using user_phone
+            if not chat.user_phone:
+                return {"success": False, "message": "No se encontró el comprador", "available_slots": []}
+                
+            buyer = self.user_crud.get_user_by_phone(chat.user_phone)
+            if not buyer:
+                return {"success": False, "message": "No se encontró el comprador", "available_slots": []}
+            
+            # Check seller availability conflict
+            has_conflict = self.check_seller_availability_conflict(property_obj.owner_id, requested_slot)
+            
+            if has_conflict:
+                # Get available slots to return to user
+                available_slots = self.get_property_availability(property_obj.id)
+                return {
+                    "success": False, 
+                    "message": "Horario no disponible", 
+                    "available_slots": available_slots
+                }
+            
+            # No conflicts - create the visit
+            visit_info = VisitInfo(
+                property_id=property_obj.id,
+                buyer_id=buyer.id,
+                seller_id=property_obj.owner_id,
+                scheduled_at=requested_slot.start_time,
+                notes=requested_slot.description
+            )
+            
+            # Create visit data with CONFIRMED status
+            visit_data = {
+                "property_id": visit_info.property_id,
+                "buyer_id": visit_info.buyer_id,
+                "seller_id": visit_info.seller_id,
+                "scheduled_at": visit_info.scheduled_at,
+                "status": VisitStatus.CONFIRMED,
+                "notes": visit_info.notes,
+                "created_at": datetime.utcnow()
+            }
+            
+            visit_id = self.visit_crud.create_visit(visit_data)
+            visit = self.visit_crud.get_visit_by_id(visit_id)
+            
+            if visit:
+                # Add the confirmed visit slot to seller's availability
+                visit_slot = AvailabilitySlot(
+                    start_time=requested_slot.start_time,
+                    end_time=requested_slot.end_time,
+                    description=f"Visita confirmada - {buyer.name if buyer.name else 'Comprador'}"
+                )
+                
+                # Use user CRUD to add the slot directly to seller's availability
+                slot_added = self.user_crud.add_availability(property_obj.owner_id, [visit_slot])
+                
+                if not slot_added:
+                    print(f"Warning: Could not add visit slot to seller's availability for visit {visit.id}")
+                
+                return {
+                    "success": True, 
+                    "message": "Visita confirmada correctamente", 
+                    "visit_id": visit.id
+                }
+            else:
+                return {
+                    "success": False, 
+                    "message": "Error al crear la visita", 
+                    "available_slots": []
+                }
+                
+        except Exception as e:
+            print(f"Error attempting visit creation: {e}")
+            return {
+                "success": False, 
+                "message": "Error interno del sistema", 
+                "available_slots": []
+            }
