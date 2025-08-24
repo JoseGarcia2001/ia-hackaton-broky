@@ -2,6 +2,7 @@ from src.app.core.agent.main import Agent
 from src.app.core.agent.seller.register import RegisterAgent
 from src.app.core.agent.seller.publisher import PublisherAgent
 from src.app.core.agent.seller.visits import VisitsAgent
+from src.app.core.agent.seller.completed_deal import CompletedDealAgent
 from src.app.core.agent.buyer.scheduler import SchedulerAgent
 from src.app.services.stage_service import StageService
 from src.app.models.business_stage import SellerStage, BuyerStage
@@ -18,12 +19,11 @@ class AgentsFactory:
         
         stage_service = StageService()
         property_stage = stage_service.get_seller_stage(chat_id)
-        
         mapped_stage = {
             SellerStage.REGISTRATION: RegisterAgent,
             SellerStage.PUBLISHING: PublisherAgent,
             SellerStage.VISITS: VisitsAgent,
-            SellerStage.COMPLETED: VisitsAgent
+            SellerStage.COMPLETED: CompletedDealAgent
         }
         return mapped_stage.get(property_stage, RegisterAgent)()
 

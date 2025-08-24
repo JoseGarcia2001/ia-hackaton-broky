@@ -7,9 +7,12 @@ from langchain.tools import tool
 from langgraph.prebuilt import InjectedState
 
 from src.app.core.crud.chat_crud import ChatCRUD
+from src.app.core.crud.visit_crud import VisitCRUD
+from src.app.core.crud.user_crud import UserCRUD
 from src.app.core.database import get_db
 from ...models.business_stage import SellerStage, BuyerStage
 from ...models.user import AvailabilitySlot
+from ...models.visit import VisitStatus
 from ...services.stage_service import StageService
 from ...services.user_service import UserService
 from ...utils.logger import logger
@@ -127,4 +130,54 @@ def update_business_stage(
             "success": False,
             "error": str(e),
             "stage": None,
+        }
+
+
+@tool
+def get_last_buyer_from_visit(state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
+    """
+    Herramienta útil para obtener información del último comprador que tuvo una visita.
+    
+    Returns:
+        Dictionary with buyer information and visit status
+    """
+    logger.info("Getting last buyer from visit")
+    try:
+        chat_id = state.get("chat_id")
+        
+        # Get seller's user ID from chat
+        chat_crud = ChatCRUD(get_db())
+        chat = chat_crud.get_chat_by_id(chat_id)
+        if not chat:
+            return {"success": False, "error": "Chat no encontrado", "buyer_name": "comprador"}
+        
+        # Get visits for this seller
+        visit_crud = VisitCRUD(get_db())
+        visits = visit_crud.get_visits_by_seller_id(chat.user_id)
+        
+        if not visits:
+            return {"success": False, "error": "No hay visitas programadas", "buyer_name": "comprador"}
+        
+        # Get the most recent visit
+        latest_visit = sorted(visits, key=lambda x: x.scheduled_at, reverse=True)[0]
+        
+        # Get buyer information
+        user_crud = UserCRUD(get_db())
+        buyer = user_crud.get_user_by_id(latest_visit.buyer_id)
+        
+        buyer_name = buyer.name if buyer and buyer.name else "comprador"
+        
+        return {
+            "success": True,
+            "buyer_name": buyer_name,
+            "visit_date": latest_visit.scheduled_at.strftime("%d/%m/%Y"),
+            "visit_status": latest_visit.status.value
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting last buyer from visit: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "buyer_name": "comprador"
         }
