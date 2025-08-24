@@ -1,12 +1,12 @@
 from typing import Dict, Any, Optional
 from datetime import datetime
-from ..models.message import MessageSender, MessageType, Message
 from ..models.user import User
+from ..models.property import Property
+from ..models.message import MessageSender, MessageType, Message
 from ..core.database import get_db
 from ..core.crud.chat_crud import ChatCRUD
 from ..core.crud.user_crud import UserCRUD
 from ..core.crud.message_crud import MessageCRUD
-
 
 class ChatService:
     """Service layer for chat operations"""
@@ -192,3 +192,27 @@ class ChatService:
         
         # Get user by phone
         return self.user_crud.get_user_by_phone(chat.user_phone)
+
+    def get_property_from_buyer_chat_id(self, chat_id: str) -> Optional[Property]:
+        """
+        Get property associated with a chat
+        
+        Args:
+            chat_id: ID of the chat
+            
+        Returns:
+            Optional[Property]: Property object if found, None otherwise
+        """
+        from ..core.crud.property_crud import PropertyCRUD
+
+        chat = self.chat_crud.get_chat_by_id(chat_id)
+        if not chat or not chat.property_id:
+            return None       
+        
+        db = get_db()
+        property_crud = PropertyCRUD(db)
+        property = property_crud.get_property_by_id(chat.property_id)
+        if not property:
+            return None
+
+        return property
