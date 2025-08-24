@@ -2,7 +2,7 @@
 Defines the tools for the register agent.
 """
 
-from typing import Optional
+from typing import Annotated, Optional
 from langchain.tools import tool
 
 
@@ -37,7 +37,7 @@ def get_user_info() -> UserInfo:
 
 
 @tool
-def save_property_info(info: PropertyInfo, state: InjectedState) -> str:
+def save_property_info(info: PropertyInfo, state: Annotated[dict, InjectedState]) -> str:
     """
     Herramienta útil para guardar la información de la propiedad en la base de datos.
     """

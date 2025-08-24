@@ -7,6 +7,7 @@ Defines the RegisterAgent class, which is responsible for registering sellers in
 """
 
 from src.app.core.agent.main import Agent
+from src.app.core.tools.general import update_business_stage
 from src.app.core.tools.register import get_user_info, save_property_info, get_remaining_info, generate_qr
 
 from langgraph.graph.state import CompiledStateGraph
@@ -21,8 +22,8 @@ class RegisterAgent(Agent):
         prompt = hub.pull("property_registration_agent")
 
         property_registration_agent = create_react_agent(
-            model="openai:gpt-4o",
-            tools=[save_property_info, get_user_info, get_remaining_info, generate_qr],
+            model="openai:gpt-4.1",
+            tools=[save_property_info, get_user_info, get_remaining_info, generate_qr, update_business_stage],
             prompt=prompt.format(),
             name="PropertyRegistrationAgent"
         )
