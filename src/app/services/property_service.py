@@ -14,6 +14,8 @@ class PropertyInfo(BaseModel):
     address: Optional[str] = Field(description="Dirección de la propiedad")
     type: Optional[str] = Field(description="Tipo de propiedad")
     price: Optional[float] = Field(description="Precio de la propiedad")
+    description: Optional[str] = Field(description="Descripción de la propiedad")
+    pictures: Optional[list[str]] = Field(description="Fotos de la propiedad")
 
 
 class PropertyProgress(BaseModel):

@@ -21,16 +21,6 @@ class UserInfo(BaseModel):
     email: str
 
 
-class PropertyInfo(BaseModel):
-    """
-    Información mínima para registrar una propiedad.
-    """
-
-    address: Optional[str] = Field(description="Dirección de la propiedad")
-    type: Optional[str] = Field(description="Tipo de propiedad")
-    price: Optional[float] = Field(description="Precio de la propiedad")
-
-
 @tool
 def get_user_info() -> UserInfo:
     """
