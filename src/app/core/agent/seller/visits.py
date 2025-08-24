@@ -7,26 +7,21 @@ from src.app.core.agent.main import Agent
 
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
+from langchain import hub
+
+from src.app.core.tools.general import save_availability
 
 
 class VisitsAgent(Agent):
     def get_agents(self) -> list[CompiledStateGraph]:
+        prompt = hub.pull("agenda_agent")
         agenda_management_agent = create_react_agent(
-            model="openai:gpt-4o",
+            model="openai:gpt-4.1",
             # TODO: Implement the tools for the visit confirmation agent
-            tools=[],
+            tools=[save_availability],
             # TODO: Iterate over the prompt
-            prompt="Eres un agente que se encarga de gestionar la agenda del vendedor",
+            prompt=prompt.format(),
             name="AgendaManagementAgent"
-        )
-        
-        qa_agent = create_react_agent(
-            model="openai:gpt-4o",
-            # TODO: Implement the tools for the qa agent
-            tools=[],
-            # TODO: Iterate over the prompt
-            prompt="Eres un agente que se encarga de responder las dudas del usuario sobre confirmación y gestión de visitas.",
-            name="QAAgent"
         )
 
         property_card_agent = create_react_agent(
@@ -56,10 +51,24 @@ class VisitsAgent(Agent):
             name="PublishingAgent"
         )
         
-        return [agenda_management_agent, qa_agent, property_card_agent, appraisal_agent, publishing_agent]
+        return [agenda_management_agent, property_card_agent, appraisal_agent, publishing_agent]
 
     def get_flow_description(self) -> str:
         return (
-            "- VisitConfirmationAgent: Agente especializado en confirmar, reprogramar o cancelar visitas de compradores\n"
-            "- QAAgent: Agente especializado en responder dudas sobre gestión de visitas"
+            "## FLUJO DE LA ETAPA DE VISITAS\n"
+            "Esta etapa sigue un flujo secuencial para completar la gestión de visitas:\n"
+            "\n"
+            "### Orden de Ejecución:\n"
+            "1. **AgendaManagementAgent**: Gestiona la agenda del vendedor para programar visitas\n"
+            "\n"
+            "### Notas Importantes:\n"
+            "- Cada agente debe completar su tarea antes de pasar al siguiente\n"
+            "- Si hay errores en la recopilación de información, el AgendaManagementAgent debe resolverlos antes de continuar\n"
+            "\n"
+            "## AGENTES DISPONIBLES\n"
+            "\n"
+            "### 1. AgendaManagementAgent\n"
+            "**Responsabilidades:**\n"
+            "- Gestionar la agenda del vendedor para programar visitas\n"
+            "- Almacenar el horario de disponibilidad del vendedor\n"
         )
