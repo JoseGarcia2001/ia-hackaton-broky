@@ -154,3 +154,37 @@ def save_agent_response(chat_id: str, agent_response: str) -> Message:
     )
     
     return message
+
+
+def get_property_id_from_chat(chat_id: str):
+    """
+    Get property ID associated with a chat by finding property owned by the chat's user
+    
+    Args:
+        chat_id: ID of the chat
+        
+    Returns:
+        Property ID string or None if not found
+    """
+    from ..core.crud.property_crud import PropertyCRUD
+    
+    db = get_db()
+    chat_crud = ChatCRUD(db)
+    user_crud = UserCRUD(db)
+    property_crud = PropertyCRUD(db)
+    
+    # Get user from chat
+    chat = chat_crud.get_chat_by_id(chat_id)
+    if not chat or not chat.user_id:
+        return None
+    
+    user = user_crud.get_user_by_id(chat.user_id)
+    if not user:
+        return None
+    
+    # Find property owned by this user (assuming one property per user for now)
+    properties = property_crud.collection.find({"owner_id": user.id}).limit(1)
+    for prop in properties:
+        return str(prop["_id"])
+    
+    return None

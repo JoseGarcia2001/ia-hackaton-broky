@@ -15,6 +15,7 @@ class Property(BaseModel):
     """Property collection model"""
     id: Optional[str] = Field(None, alias="_id", description="MongoDB ObjectId")
     address: str = Field(..., description="Property address")
+    type: Optional[str] = Field(None, description="Property type (apartment, house, etc.)")
     images: List[str] = Field(default_factory=list, description="Base64 encoded images")
     legal_docs: List[LegalDocument] = Field(default_factory=list, description="Legal documents")
     value: float = Field(..., description="Property value")
