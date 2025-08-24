@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from langgraph.prebuilt import InjectedState
 
 from ...services.property_service import PropertyService, PropertyInfo, PropertyProgress
-from ...services.chat_service import ChatService, get_property_id_from_chat
+from ...services.chat_service import ChatService
 from ...models.property import Property
 from ...models.user import User
 
@@ -59,8 +59,8 @@ async def get_remaining_info(state: Annotated[dict, InjectedState]) -> Optional[
     chat_id = state.get("chat_id") or ""
     
     # Try to get property_id from state first, then from chat service
-    
-    property_id = get_property_id_from_chat(chat_id) 
+    chat_service = ChatService()
+    property_id = await chat_service.get_property_id_from_chat(chat_id) 
     
     if not property_id:
         return None

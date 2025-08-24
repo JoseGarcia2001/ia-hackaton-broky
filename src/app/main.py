@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from .utils.whatsapp_qr import WhatsAppQRGenerator
 from .services.infobip_service import InfobipService
-from .services.chat_service import process_chat_message, save_agent_response
+from .services.chat_service import ChatService
 from .core.agents_factory import AgentsFactory
 from .core.agent.main import Agent, AgentResponse
 app = FastAPI(
@@ -39,10 +39,11 @@ async def root():
 async def infobip_webhook(webhook_data: dict):
     # recibir mensaje de infobip este es el webhook
     infobip_service = InfobipService()
+    chat_service = ChatService()
     # Receive message from Infobip
     message_data = infobip_service.receive_webhook_message(webhook_data)
     # Process chat message (5 steps: create chat, get user type, process message type, store message)
-    chat_data = process_chat_message(message_data)
+    chat_data = await chat_service.process_chat_message(message_data)
     
     # Extract processed data
     user_type = chat_data["user_type"]
@@ -72,7 +73,7 @@ async def infobip_webhook(webhook_data: dict):
     infobip_service.send_message(message_data.get("from"), agent_response)
     
     # Save agent response to chat history
-    save_agent_response(chat_id, agent_response["message"])
+    await chat_service.save_agent_response(chat_id, agent_response["message"])
 
     return MessageResponse(
         message=agent_response.get("message"),
