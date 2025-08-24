@@ -335,7 +335,7 @@ class OpenIA:
         
         # Calcular el área del rectángulo blanco central
         white_rect_width = int(img_width * 0.65)  # 65% del ancho total
-        white_rect_height = int(img_height * 0.45)  # Aproximadamente 45% del alto
+        white_rect_height = int(img_height * 0.40)  # Aproximadamente 45% del alto
         
         # El QR dentro del rectángulo blanco ocupa aproximadamente 90% del rectángulo
         qr_width = int(white_rect_width * 0.90)
@@ -343,7 +343,7 @@ class OpenIA:
         
         # Centrar perfectamente en la imagen
         center_x = img_width // 2
-        center_y = int(img_height * 0.46)  # El rectángulo blanco está ligeramente arriba del centro
+        center_y = int(img_height * 0.35)  # El rectángulo blanco está ligeramente arriba del centro
         
         # Calcular posición de la esquina superior izquierda del QR
         qr_x = center_x - (qr_width // 2)
