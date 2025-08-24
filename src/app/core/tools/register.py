@@ -7,6 +7,7 @@ from langchain.tools import tool
 
 
 from pydantic import BaseModel, Field
+from langgraph.prebuilt import InjectedState
 
 
 class UserInfo(BaseModel):
@@ -36,11 +37,12 @@ def get_user_info() -> UserInfo:
 
 
 @tool
-def save_property_info(info: PropertyInfo) -> str:
+def save_property_info(info: PropertyInfo, state: InjectedState) -> str:
     """
     Herramienta útil para guardar la información de la propiedad en la base de datos.
     """
     # TODO: Implement the tool to save the property info
+    chat_id = state.get("chat_id")
     return "Property info saved!"
 
 

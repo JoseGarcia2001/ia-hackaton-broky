@@ -13,6 +13,13 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 
+class AgentState(AgentStateWithStructuredResponse):
+    """
+    The state of the agent.
+    """
+    chat_id: str = Field(description="ID del chat")
+
+
 class MessageType(str, Enum):
     TEXT = "text"
     IMAGE = "image"
@@ -75,7 +82,7 @@ class Agent(ABC):
             add_handoff_back_messages=True,
             output_mode="last_message",
             response_format=AgentResponse,
-            state_schema=AgentStateWithStructuredResponse,
+            state_schema=AgentState,
         ).compile()
 
         # messages: list[BaseMessage] = []
@@ -91,7 +98,7 @@ class Agent(ABC):
             HumanMessage(content="El tipo de propiedad es un apartamento"),
         ]
 
-        response = supervisor.invoke({"messages": messages}, {"run_name": self.__class__.__name__})
+        response = supervisor.invoke({"messages": messages, "chat_id": agent_context.get("chat_id")}, {"run_name": self.__class__.__name__})
 
         message_response: AgentResponse = AgentResponse(type=MessageType.TEXT, message=response["messages"][-1].content)
 
