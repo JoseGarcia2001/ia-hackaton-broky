@@ -97,7 +97,7 @@ class UserCRUD:
         """
         logger.info(f"Adding availability slots to user {user_id}")
         try:
-            slots_data = [slot.dict() for slot in availability_slots]
+            slots_data = [slot.model_dump() for slot in availability_slots]
             result = self.collection.update_one(
                 {"_id": ObjectId(user_id)},
                 {

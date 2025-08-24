@@ -5,6 +5,9 @@ Defines the tools for the general purposes
 from typing import Annotated, Dict, Any, Optional, List
 from langchain.tools import tool
 from langgraph.prebuilt import InjectedState
+
+from src.app.core.crud.chat_crud import ChatCRUD
+from src.app.core.database import get_db
 from ...models.business_stage import SellerStage, BuyerStage
 from ...models.user import AvailabilitySlot
 from ...services.stage_service import StageService
@@ -68,11 +71,14 @@ def save_availability(
     logger.info("Saving availability")
     try:
         chat_id = state.get("chat_id")
-        if not chat_id:
+
+        chat_crud = ChatCRUD(get_db())
+        chat = chat_crud.get_chat_by_id(chat_id)
+        if not chat:
             return {"success": False, "error": "No chat_id found in state", "message": "Error: Usuario no identificado"}
 
         user_service = UserService()
-        success = user_service.add_availability(chat_id, availability_slots)
+        success = user_service.add_availability(chat.user_id, availability_slots)
 
         if success:
             return {"success": True, "message": "Horario de disponibilidad almacenado correctamente"}
