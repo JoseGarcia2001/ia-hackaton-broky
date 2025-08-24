@@ -24,6 +24,8 @@ class Property(BaseModel):
     nearby_places: List[str] = Field(default_factory=list, description="Nearby places of interest")
     owner_id: str = Field(..., description="Owner's user ID")
     business_stage: SellerStage = Field(default=SellerStage.REGISTRATION, description="Business stage of the property")
+    available_days: List[str] = Field(default_factory=list, description="Days available for visits (e.g., ['lunes', 'sábados'])")
+    available_hours: str = Field(default="", description="Available hours for visits (e.g., 'de 2 a 4')")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(None)
     is_active: bool = Field(default=True, description="Property is available for sale")

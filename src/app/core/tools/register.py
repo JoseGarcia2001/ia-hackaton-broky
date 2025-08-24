@@ -110,4 +110,7 @@ def generate_qr(phone_number: str, property_id: str) -> str:
             "image": url_public
         }
     )
-    return "Templated implemented correctly!"
+    return {
+        "success": True,
+        "message": "Código QR generado y enviado correctamente",
+    }
