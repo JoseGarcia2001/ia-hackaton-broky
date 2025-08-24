@@ -4,8 +4,6 @@ from .utils.whatsapp_qr import WhatsAppQRGenerator
 from .services.infobip_service import InfobipService
 from .services.chat_service import process_chat_message, save_agent_response
 from .core.agents_factory import AgentsFactory
-from .core.agent.main import Agent, AgentResponse
-
 app = FastAPI(
     title="IA Hackaton Broky API",
     description="API desarrollada para el hackaton con FastAPI",
@@ -53,14 +51,18 @@ async def infobip_webhook(webhook_data: dict):
     print(f"User type: {user_type}")    
     print(f"Conversation: {conversation_history}")
     
-    # # Get agent
-    agent: Agent = AgentsFactory.get_agent(user_type)
+    # Get agent
+    context = {"chat_id": chat_id}
+    # agent = AgentsFactory.get_agent(user_type, context)
+    # print(f"Using agent: {agent.__class__.__name__}")
+
     # # Process message with complete conversation context
-    agent_context = {
-        "conversation_history": conversation_history,
-        "chat_id": chat_id
-    }
-    agent_response: AgentResponse = agent.process(agent_context)
+    # agent_context = {
+    #     "latest_message": latest_message,
+    #     "conversation_history": conversation_history,
+    #     "chat_id": chat_id
+    # }
+    # agent_response = agent.process(agent_context)
     # # Send response to Infobip
     # ------------------------------------------------------------------------------------------------
     # TODO: Remove this after implementing the qr code
