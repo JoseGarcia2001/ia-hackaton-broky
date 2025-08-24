@@ -29,6 +29,9 @@ services:
       - INFOBIP_BASE_URL=${INFOBIP_BASE_URL}
       - INFOBIP_WHATSAPP_FROM=${INFOBIP_WHATSAPP_FROM}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_REGION=${AWS_REGION}
     depends_on:
       - mongo
     networks:

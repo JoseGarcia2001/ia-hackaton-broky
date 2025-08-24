@@ -6,6 +6,8 @@ from typing import Annotated, Optional, Dict, Any
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 from langgraph.prebuilt import InjectedState
+from ...services.image_integration_service import ImageIntegrationService
+from ...utils.s3_utils import upload_file_to_s3
 
 from ...services.property_service import PropertyService, PropertyInfo, PropertyProgress
 from ...services.chat_service import ChatService
@@ -18,7 +20,14 @@ class UserInfo(BaseModel):
     email: str
 
 
+class PropertyInfo(BaseModel):
+    """
+    Información mínima para registrar una propiedad.
+    """
 
+    address: Optional[str] = Field(description="Dirección de la propiedad")
+    type: Optional[str] = Field(description="Tipo de propiedad")
+    price: Optional[str] = Field(description="Precio de la propiedad")
 
 
 @tool
@@ -71,9 +80,19 @@ async def get_remaining_info(state: Annotated[dict, InjectedState]) -> Optional[
 
 
 @tool
-def generate_qr() -> str:
+def generate_qr(phone_number: str, property_id: str) -> str:
     """
     Herramienta útil para generar el código QR asociado a la propiedad.
     """
-    # TODO: Implement the tool to generate the QR
-    return "QR generated!"
+    integration_service = ImageIntegrationService()
+    qr_position = None
+    qr_size = None
+    path = integration_service.create_property_qr_image(
+        phone_number=phone_number,
+        property_message=f"¡Hola! 🏠 Me gustaría obtener información sobre la propiedad ubicada en {property_id}",
+        replace_center_qr=True,
+        qr_position=qr_position,
+        qr_size=qr_size,
+    )
+    url_public = upload_file_to_s3(path)
+    return url_public
