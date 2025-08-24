@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
+from .business_stage import SellerStage
 
 
 class LegalDocument(BaseModel):
@@ -21,6 +22,7 @@ class Property(BaseModel):
     amenities: List[str] = Field(default_factory=list, description="Property amenities")
     nearby_places: List[str] = Field(default_factory=list, description="Nearby places of interest")
     owner_id: str = Field(..., description="Owner's user ID")
+    business_stage: SellerStage = Field(default=SellerStage.REGISTRATION, description="Business stage of the property")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(None)
     is_active: bool = Field(default=True, description="Property is available for sale")

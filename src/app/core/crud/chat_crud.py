@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 
 from ...models import Chat
+from ...models.business_stage import BuyerStage
 
 
 class ChatCRUD:
@@ -59,3 +60,18 @@ class ChatCRUD:
             )
         
         return None
+    
+    def get_chat_stage(self, chat_id: str) -> Optional[BuyerStage]:
+        """Get the business stage of a chat"""
+        chat_doc = self.collection.find_one({"_id": ObjectId(chat_id)})
+        if chat_doc and "business_stage" in chat_doc:
+            return BuyerStage(chat_doc["business_stage"])
+        return None
+    
+    def update_chat_stage(self, chat_id: str, new_stage: BuyerStage) -> bool:
+        """Update the business stage of a chat"""
+        result = self.collection.update_one(
+            {"_id": ObjectId(chat_id)},
+            {"$set": {"business_stage": new_stage.value}}
+        )
+        return result.modified_count > 0

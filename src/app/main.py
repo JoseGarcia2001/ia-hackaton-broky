@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from .services.infobip_service import InfobipService
 from .services.chat_service import process_chat_message, save_agent_response
+from .core.agents_factory import AgentsFactory
 
 
 app = FastAPI(
@@ -54,12 +55,16 @@ async def infobip_webhook(webhook_data: dict):
 
     print(f"Conversation: {conversation_history}")
     
-    # # Get agent
-    # agent = AgentFactory.get_agent(user_type)
+    # Get agent
+    context = {"chat_id": chat_id}
+    agent = AgentsFactory.get_agent(user_type, context)
+    print(f"Using agent: {agent.__class__.__name__}")
+
     # # Process message with complete conversation context
     # agent_context = {
     #     "latest_message": latest_message,
-    #     "conversation_history": conversation_history
+    #     "conversation_history": conversation_history,
+    #     "chat_id": chat_id
     # }
     # agent_response = agent.process(agent_context)
     # # Send response to Infobip
