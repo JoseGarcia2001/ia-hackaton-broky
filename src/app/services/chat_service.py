@@ -248,12 +248,18 @@ class ChatService:
         logger.info(f"Getting property from chat {chat_id}")
 
         chat = self.chat_crud.get_chat_by_id(chat_id)
+        print("chat")
+        print(chat)
         if not chat or not chat.property_id:
             return None       
         
         db = get_db()
         property_crud = PropertyCRUD(db)
+        print("chat.property_id")
+        print(chat.property_id)
         property = property_crud.get_property_by_id(chat.property_id)
+        print("property")
+        print(property)
         if not property:
             return None
 
