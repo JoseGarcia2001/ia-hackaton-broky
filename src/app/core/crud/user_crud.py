@@ -27,16 +27,38 @@ class UserCRUD:
     
     def get_or_create_user(self, phone: str, name: str = None) -> User:
         """
-        Get existing user or create new one
+        Get existing user or create new one in database
         """
-        # Mock implementation for now
-        return User(
-            id=f"user_{phone}",
-            name=name or f"User {phone}",
-            phone=phone,
-            role=UserRole.BUYER,
-            created_at=datetime.utcnow()
-        )
+        # Try to find existing user
+        user_doc = self.collection.find_one({"phone": phone})
+        
+        if user_doc:
+            # Return existing user
+            return User(
+                id=str(user_doc["_id"]),
+                name=user_doc["name"],
+                phone=user_doc["phone"],
+                role=UserRole(user_doc["role"]),
+                created_at=user_doc["created_at"]
+            )
+        else:
+            # Create new user in database
+            user_data = {
+                "name": name or f"User {phone}",
+                "phone": phone,
+                "role": UserRole.BUYER.value,
+                "created_at": datetime.utcnow()
+            }
+            
+            result = self.collection.insert_one(user_data)
+            
+            return User(
+                id=str(result.inserted_id),
+                name=user_data["name"],
+                phone=phone,
+                role=UserRole.BUYER,
+                created_at=user_data["created_at"]
+            )
     
     def get_user_by_id(self, user_id: str) -> Optional[User]:
         """
