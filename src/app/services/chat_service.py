@@ -1,190 +1,194 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 from ..models.message import MessageSender, MessageType, Message
+from ..models.user import User
 from ..core.database import get_db
 from ..core.crud.chat_crud import ChatCRUD
 from ..core.crud.user_crud import UserCRUD
 from ..core.crud.message_crud import MessageCRUD
 
 
-def process_chat_message(message_data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Process chat message through the 5 steps:
-    1. Create chat if not existent
-    2. Get user type  
-    3. Process message type (already done by infobip_service)
-    4. Store the message
-    5. Return structured data with full context for agent processing
+class ChatService:
+    """Service layer for chat operations"""
     
-    Args:
-        message_data: Processed message data from Infobip
-        Example: {
-            'id': 'f1e6b8c3-1d2e-4c3a-9f0e-123456789abc',
-            'from': '34600123456',
-            'to': '447908680611', 
-            'received_at': '2025-08-23T20:09:54.000+0000',
-            'type': 'text',
-            'content': {'text': 'Oeee', 'type': 'text'},
-            'is_valid': True
-        }
+    def __init__(self):
+        db = get_db()
+        self.chat_crud = ChatCRUD(db)
+        self.user_crud = UserCRUD(db)
+        self.message_crud = MessageCRUD(db)
+    
+    async def process_chat_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process chat message through the 5 steps:
+        1. Create chat if not existent
+        2. Get user type  
+        3. Process message type (already done by infobip_service)
+        4. Store the message
+        5. Return structured data with full context for agent processing
         
-    Returns:
-        Dict containing user_type, latest message, and conversation history
-    """
-    db = get_db()
-    chat_crud = ChatCRUD(db)
-    user_crud = UserCRUD(db)
-    message_crud = MessageCRUD(db)
-    
-    # Step 1: Get or create chat
-    user_phone = message_data.get("from", "")
-    chat = chat_crud.get_or_create_chat(user_phone)
-    
-    # Step 2: Get user type
-    user_type = user_crud.get_user_type(user_phone)
-    
-    # Step 3: Store the message
-    stored_message = message_crud.add_message(chat.id, message_data)
-    
-    # Step 4: Get full conversation history for agent context with sender info
-    messages = message_crud.get_messages_by_chat(chat.id)
-    conversation_history = [
-        {
-            "content": msg.content,
-            "sender": msg.sender.value,
-            "type": msg.type.value,
-        }
-        for msg in messages
-    ]
-
-    
-    return {
-        "user_type": user_type,
-        "latest_message": stored_message.content,
-        "conversation_history": conversation_history,
-        "chat_id": chat.id
-    }
-
-
-def get_user_conversation(user_phone: str) -> Dict[str, Any]:
-    """
-    Get all conversation history for a user
-    
-    Args:
-        user_phone: User's phone number
+        Args:
+            message_data: Processed message data from Infobip
+            Example: {
+                'id': 'f1e6b8c3-1d2e-4c3a-9f0e-123456789abc',
+                'from': '34600123456',
+                'to': '447908680611', 
+                'received_at': '2025-08-23T20:09:54.000+0000',
+                'type': 'text',
+                'content': {'text': 'Oeee', 'type': 'text'},
+                'is_valid': True
+            }
+            
+        Returns:
+            Dict containing user_type, latest message, and conversation history
+        """
+        # Step 1: Get or create chat
+        user_phone = message_data.get("from", "")
+        chat = self.chat_crud.get_or_create_chat(user_phone)
         
-    Returns:
-        Dict containing chat info and all messages
-    """
-    db = get_db()
-    chat_crud = ChatCRUD(db)
-    message_crud = MessageCRUD(db)
-    user_crud = UserCRUD(db)
-    
-    # Get chat for user
-    chat = chat_crud.get_chat_by_user_phone(user_phone)
-    
-    if not chat:
+        # Step 2: Get user type
+        user_type = self.user_crud.get_user_type(user_phone)
+        
+        # Step 3: Store the message
+        stored_message = self.message_crud.add_message(chat.id, message_data)
+        
+        # Step 4: Get full conversation history for agent context with sender info
+        messages = self.message_crud.get_messages_by_chat(chat.id)
+        conversation_history = [
+            {
+                "content": msg.content,
+                "sender": msg.sender.value,
+                "type": msg.type.value,
+            }
+            for msg in messages
+        ]
+
+        
         return {
-            "chat": None,
-            "messages": [],
-            "user": None,
-            "conversation_exists": False
+            "user_type": user_type,
+            "latest_message": stored_message.content,
+            "conversation_history": conversation_history,
+            "chat_id": chat.id
         }
-    
-    # Get all messages for the chat
-    messages = message_crud.get_messages_by_chat(chat.id)
-    
-    # Get user info
-    user = user_crud.get_or_create_user(user_phone)
-    
-    return {
-        "chat": chat,
-        "messages": messages,
-        "user": user,
-        "conversation_exists": True,
-        "message_count": len(messages)
-    }
 
-
-def save_agent_response(chat_id: str, agent_response: str) -> Message:
-    """
-    Save the agent's response to the chat
     
-    Args:
-        chat_id: ID of the chat to save the response to
-        agent_response: The agent's response text
+    async def get_user_conversation(self, user_phone: str) -> Dict[str, Any]:
+        """
+        Get all conversation history for a user
         
-    Returns:
-        Message: The saved message object
-    """
-    db = get_db()
-    message_crud = MessageCRUD(db)
-    
-    # Create the agent response message data
-    agent_message_data = {
-        "type": "text",
-        "content": {
-            "text": agent_response,
-            "type": "text"
+        Args:
+            user_phone: User's phone number
+            
+        Returns:
+            Dict containing chat info and all messages
+        """
+        # Get chat for user
+        chat = self.chat_crud.get_chat_by_user_phone(user_phone)
+        
+        if not chat:
+            return {
+                "chat": None,
+                "messages": [],
+                "user": None,
+                "conversation_exists": False
+            }
+        
+        # Get all messages for the chat
+        messages = self.message_crud.get_messages_by_chat(chat.id)
+        
+        # Get user info
+        user = self.user_crud.get_or_create_user(user_phone)
+        
+        return {
+            "chat": chat,
+            "messages": messages,
+            "user": user,
+            "conversation_exists": True,
+            "message_count": len(messages)
         }
-    }
-    
-    # Create message document for agent response
-    
-    message_doc = {
-        "chat_id": chat_id,
-        "sender": MessageSender.SYSTEM.value,
-        "type": MessageType.TEXT.value,
-        "content": agent_response,
-        "timestamp": datetime.utcnow()
-    }
-    
-    # Insert into MongoDB
-    result = message_crud.collection.insert_one(message_doc)
-    
-    # Return Message object with generated ID
-    message = Message(
-        id=str(result.inserted_id),
-        chat_id=chat_id,
-        sender=MessageSender.SYSTEM,
-        type=MessageType.TEXT,
-        content=agent_response,
-        timestamp=message_doc["timestamp"]
-    )
-    
-    return message
 
-
-def get_property_id_from_chat(chat_id: str):
-    """
-    Get property ID associated with a chat by finding property owned by the chat's user
     
-    Args:
-        chat_id: ID of the chat
+    async def save_agent_response(self, chat_id: str, agent_response: str) -> Message:
+        """
+        Save the agent's response to the chat
         
-    Returns:
-        Property ID string or None if not found
-    """
-    from ..core.crud.property_crud import PropertyCRUD
+        Args:
+            chat_id: ID of the chat to save the response to
+            agent_response: The agent's response text
+            
+        Returns:
+            Message: The saved message object
+        """
+        # Create message document for agent response
+        message_doc = {
+            "chat_id": chat_id,
+            "sender": MessageSender.SYSTEM.value,
+            "type": MessageType.TEXT.value,
+            "content": agent_response,
+            "timestamp": datetime.utcnow()
+        }
+        
+        # Insert into MongoDB
+        result = self.message_crud.collection.insert_one(message_doc)
+        
+        # Return Message object with generated ID
+        message = Message(
+            id=str(result.inserted_id),
+            chat_id=chat_id,
+            sender=MessageSender.SYSTEM,
+            type=MessageType.TEXT,
+            content=agent_response,
+            timestamp=message_doc["timestamp"]
+        )
+        
+        return message
+
+
     
-    db = get_db()
-    chat_crud = ChatCRUD(db)
-    user_crud = UserCRUD(db)
-    property_crud = PropertyCRUD(db)
-    
-    # Get user from chat
-    chat = chat_crud.get_chat_by_id(chat_id)
-    if not chat or not chat.user_id:
+    async def get_property_id_from_chat(self, chat_id: str):
+        """
+        Get property ID associated with a chat by finding property owned by the chat's user
+        
+        Args:
+            chat_id: ID of the chat
+            
+        Returns:
+            Property ID string or None if not found
+        """
+        from ..core.crud.property_crud import PropertyCRUD
+        
+        db = get_db()
+        property_crud = PropertyCRUD(db)
+        
+        # Get user from chat
+        chat = self.chat_crud.get_chat_by_id(chat_id)
+        if not chat or not chat.user_id:
+            return None
+        
+        user = self.user_crud.get_user_by_id(chat.user_id)
+        if not user:
+            return None
+        
+        # Find property owned by this user (assuming one property per user for now)
+        properties = property_crud.collection.find({"owner_id": user.id}).limit(1)
+        for prop in properties:
+            return str(prop["_id"])
+        
         return None
     
-    user = user_crud.get_user_by_id(chat.user_id)
-    if not user:
-        return None
-    
-    # Find property owned by this user (assuming one property per user for now)
-    properties = property_crud.collection.find({"owner_id": user.id}).limit(1)
-    for prop in properties:
-        return str(prop["_id"])
-    
-    return None
+    async def get_user_from_chat(self, chat_id: str) -> Optional[User]:
+        """
+        Get user associated with a chat
+        
+        Args:
+            chat_id: ID of the chat
+            
+        Returns:
+            Optional[User]: User object if found, None otherwise
+        """
+        # Get chat
+        chat = self.chat_crud.get_chat_by_id(chat_id)
+        if not chat or not chat.user_phone:
+            return None
+        
+        # Get user by phone
+        return self.user_crud.get_user_by_phone(chat.user_phone)

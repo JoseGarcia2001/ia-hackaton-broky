@@ -75,3 +75,29 @@ class ChatCRUD:
             {"$set": {"business_stage": new_stage.value}}
         )
         return result.modified_count > 0
+    
+    def get_chat_by_id(self, chat_id: str) -> Optional[Chat]:
+        """
+        Get chat by ID
+        
+        Args:
+            chat_id: Chat ID
+            
+        Returns:
+            Optional[Chat]: Chat object if found, None otherwise
+        """
+        try:
+            chat_doc = self.collection.find_one({"_id": ObjectId(chat_id)})
+            
+            if chat_doc:
+                return Chat(
+                    id=str(chat_doc["_id"]),
+                    user_id=chat_doc["user_id"],
+                    created_at=chat_doc["created_at"],
+                    is_active=chat_doc.get("is_active", True)
+                )
+            
+            return None
+        except Exception as e:
+            print(f"Error getting chat by id: {e}")
+            return None

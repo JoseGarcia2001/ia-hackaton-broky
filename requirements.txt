@@ -16,3 +16,4 @@ openai==1.99.9
 whisper==1.0.0
 qrcode==8.0
 Pillow==11.0.0
+boto3==1.28.52
