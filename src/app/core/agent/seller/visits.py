@@ -9,6 +9,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
 from langchain import hub
 
+from src.app.core.tools.visits import create_property_card, get_appraisal_info, publish_property    
 from src.app.core.tools.general import save_availability
 
 
@@ -26,7 +27,7 @@ class VisitsAgent(Agent):
         property_card_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the property card agent
-            tools=[],
+            tools=[create_property_card],
             # TODO: Iterate over the prompt
             prompt="Eres un agente que se encarga de crear fichas detalladas de propiedades con toda la información relevante.",
             name="PropertyCardAgent",
@@ -36,7 +37,7 @@ class VisitsAgent(Agent):
         appraisal_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the appraisal agent
-            tools=[],
+            tools=[get_appraisal_info],
             # TODO: Iterate over the prompt
             prompt="Eres un agente que se encarga de realizar avalúos de propiedades basado en características del mercado.",
             name="AppraisalAgent",
@@ -46,7 +47,7 @@ class VisitsAgent(Agent):
         publishing_agent = create_react_agent(
             model="openai:gpt-4o",
             # TODO: Implement the tools for the publishing agent
-            tools=[],
+            tools=[publish_property],
             # TODO: Iterate over the prompt
             prompt="Eres un agente que se encarga de publicar propiedades en diferentes plataformas digitales.",
             name="PublishingAgent",
