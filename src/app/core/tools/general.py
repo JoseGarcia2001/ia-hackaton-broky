@@ -2,11 +2,13 @@
 Defines the tools for the general purposes
 """
 
-from typing import Annotated, Dict, Any, Optional
+from typing import Annotated, Dict, Any, Optional, List
 from langchain.tools import tool
 from langgraph.prebuilt import InjectedState
 from ...models.business_stage import SellerStage, BuyerStage
+from ...models.user import AvailabilitySlot
 from ...services.stage_service import StageService
+from ...services.user_service import UserService
 
 
 @tool
@@ -53,11 +55,46 @@ def get_business_stage(user_type: str, state: Annotated[dict, InjectedState]) ->
 
 
 @tool
-def save_availability(availability: Annotated[str, "Horario de disponibilidad del vendedor"], state: Annotated[dict, InjectedState]) -> str:
+async def save_availability(availability_slots: Annotated[List[AvailabilitySlot], "List of availability time slots"], state: Annotated[dict, InjectedState]) -> Dict[str, Any]:
     """
     Herramienta útil para almacenar o actualizar el horario de disponibilidad del vendedor.
+    
+    Args:
+        availability_slots: List of AvailabilitySlot objects with start_time, end_time, and optional description
+        state: Injected state containing chat_id
+    
+    Returns:
+        Dictionary with success status and message
     """
-    return "Horario de disponibilidad almacenado correctamente"
+    try:
+        chat_id = state.get("chat_id")
+        if not chat_id:
+            return {
+                "success": False,
+                "error": "No chat_id found in state",
+                "message": "Error: Usuario no identificado"
+            }
+        
+        user_service = UserService()
+        success = await user_service.add_availability(chat_id, availability_slots)
+        
+        if success:
+            return {
+                "success": True,
+                "message": "Horario de disponibilidad almacenado correctamente"
+            }
+
+        return {
+            "success": False,
+            "message": "Error al almacenar el horario de disponibilidad"
+        }
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Error al procesar el horario de disponibilidad"
+        }
 
 
 @tool
