@@ -36,6 +36,7 @@ class StageService:
         # Get chat to find property_id
         chat_doc = self.db.chats.find_one({"_id": chat_id})
         if not chat_doc or not chat_doc.get("property_id"):
+            logger.warning(f"No property_id found for chat {chat_id}")
             return False
         
         return self.property_crud.update_property_stage(chat_doc["property_id"], new_stage)
