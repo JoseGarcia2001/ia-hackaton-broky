@@ -1,11 +1,13 @@
 from typing import Dict, Any, Optional
 from datetime import datetime
+import re
 from ..models.message import MessageSender, MessageType, Message
 from ..models.user import User
 from ..core.database import get_db
 from ..core.crud.chat_crud import ChatCRUD
 from ..core.crud.user_crud import UserCRUD
 from ..core.crud.message_crud import MessageCRUD
+from ..core.crud.property_crud import PropertyCRUD
 
 
 class ChatService:
@@ -16,6 +18,7 @@ class ChatService:
         self.chat_crud = ChatCRUD(db)
         self.user_crud = UserCRUD(db)
         self.message_crud = MessageCRUD(db)
+        self.property_crud = PropertyCRUD(db)
     
     def process_chat_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -57,8 +60,27 @@ class ChatService:
                 # Update the chat object
                 chat.user_id = user.id
         
-        # Step 4: Get user type (can use user object now)
-        user_type = "seller" if user.role.value == "seller" else "buyer"
+        # Step 4: Check for property inquiry pattern
+        user_type = "seller" if user.role.value == "seller" else "buyer"  # Default user type
+        
+        # Check if message contains property inquiry pattern
+        message_content = message_data.get("content", {}).get("text", "")
+        property_inquiry_pattern = r"¡Hola! 🏠 Me gustaría obtener información sobre la propiedad ubicada en (.+)"
+        match = re.search(property_inquiry_pattern, message_content, re.IGNORECASE)
+        
+        if match:
+            # Extract property address
+            property_address = match.group(1).strip()
+            
+            # Look up property by address
+            property_obj = self.property_crud.get_property_by_address(property_address)
+            
+            if property_obj:
+                # Update chat with property_id and override user_type to buyer
+                update_data = {"property_id": property_obj.id}
+                self.chat_crud.update_chat(chat.id, update_data)
+                user_type = "buyer"
+        
         
         # Step 5: Store the message
         stored_message = self.message_crud.add_message(chat.id, message_data)
