@@ -13,6 +13,7 @@ from ...services.property_service import PropertyService, PropertyInfo, Property
 from ...services.chat_service import ChatService
 from ...models.property import Property
 from ...models.user import User
+from ...services.infobip_service import InfobipService
 
 
 class UserInfo(BaseModel):
@@ -95,4 +96,12 @@ def generate_qr(phone_number: str, property_id: str) -> str:
         qr_size=qr_size,
     )
     url_public = upload_file_to_s3(path)
-    return url_public
+    InfobipService().send_template_message(
+        to=phone_number,
+        template_name="banner_qr_broky",
+        language="es",
+        template_data={
+            "image": url_public
+        }
+    )
+    return "Templated implemented correctly!"
