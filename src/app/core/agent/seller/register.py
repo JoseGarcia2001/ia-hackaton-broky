@@ -16,7 +16,6 @@ from langchain import hub
 
 
 class RegisterAgent(Agent):
-    
     def get_agents(self) -> list[CompiledStateGraph]:
         prompt = hub.pull("property_registration_agent")
 
@@ -25,9 +24,9 @@ class RegisterAgent(Agent):
             tools=[save_property_info, get_user_info, get_remaining_info, generate_qr, update_business_stage],
             prompt=prompt.format(),
             name="PropertyRegistrationAgent",
-            state_schema=AgentState
+            state_schema=AgentState,
         )
-        
+
         return [property_registration_agent]
 
     def get_flow_description(self) -> str:

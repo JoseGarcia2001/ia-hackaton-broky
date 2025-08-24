@@ -116,14 +116,14 @@ def update_business_stage(
         chat_id = state.get("chat_id")
         stage_service = StageService()
         
-        if user_type.lower() == "seller" and isinstance(stage, SellerStage):
+        if user_type.lower() == "seller":
             success = stage_service.update_seller_stage(chat_id, stage)
             return {
                 "success": success,
                 "stage": stage.value,
             }
         
-        if user_type.lower() == "buyer" and isinstance(stage, BuyerStage):
+        if user_type.lower() == "buyer":
             success = stage_service.update_buyer_stage(chat_id, stage)
             return {
                 "success": success,
