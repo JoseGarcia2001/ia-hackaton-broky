@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from .utils.whatsapp_qr import WhatsAppQRGenerator
 from .services.infobip_service import InfobipService
 from .services.chat_service import process_chat_message, save_agent_response
-
 
 app = FastAPI(
     title="IA Hackaton Broky API",
@@ -63,6 +63,16 @@ async def infobip_webhook(webhook_data: dict):
     # }
     # agent_response = agent.process(agent_context)
     # # Send response to Infobip
+    # ------------------------------------------------------------------------------------------------
+    # TODO: Remove this after implementing the qr code
+    generator = WhatsAppQRGenerator()
+    filepath = generator.save_qr_image(
+        phone_number=message_data.get("to"),
+        message="¡Hola Broky! 🏠 Me gustaría obtener información sobre la propiedad en #",
+        filename=f"broky_contact_qr_{message_data.get('from')}.png"
+    )
+    print(f"QR code saved in: {filepath}")
+    # ------------------------------------------------------------------------------------------------
     agent_response = {
         "message": "Gracias por tu mensaje, en breve te responderemos",
         "type": "text"

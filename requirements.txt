@@ -14,3 +14,5 @@ langchain-openai==0.3.31
 loguru==0.7.0
 openai==1.99.9
 whisper==1.0.0
+qrcode==8.0
+Pillow==11.0.0
