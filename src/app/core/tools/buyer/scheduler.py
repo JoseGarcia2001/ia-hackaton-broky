@@ -2,30 +2,60 @@
 Defines the tools for the buyer scheduler agent
 """
 
-from typing import Annotated
+from typing import Annotated, Optional
 from langchain.tools import tool
 from langgraph.prebuilt import InjectedState
 from ....services.chat_service import ChatService
+from ....services.user_service import UserService, BuyerInfo, BuyerProgress
 from ....core.database import get_db
 from ....core.crud.property_crud import PropertyCRUD
 
 
 @tool
-def save_buyer_info(buyer_info: str, state: Annotated[dict, InjectedState]) -> str:
+def save_buyer_info(info: BuyerInfo, state: Annotated[dict, InjectedState]) -> str:
     """
     Herramienta útil para registrar la información del comprador.
     """
-
-    return "Información del comprador registrada correctamente"
+    chat_id = state.get("chat_id")
+    user_service = UserService()
+    chat_service = ChatService()
+    
+    # Get user from chat to use as buyer
+    user = chat_service.get_user_from_chat(chat_id)
+    if not user:
+        return "Error: No se pudo encontrar el usuario"
+    
+    # Update buyer info
+    success = user_service.update_buyer_info(user.id, info)
+    
+    if success:
+        return "Información del comprador registrada correctamente"
+    else:
+        return "Error: No se pudo guardar la información del comprador"
 
 
 @tool
-def get_remaining_buyer_info(state: Annotated[dict, InjectedState]) -> str:
+def get_remaining_buyer_info(state: Annotated[dict, InjectedState]) -> Optional[BuyerProgress]:
     """
     Herramienta útil para obtener la información que se necesita del posible comprador.
     """
-
-    return {"name": None}
+    chat_id = state.get("chat_id")
+    
+    # Get user from chat service
+    chat_service = ChatService()
+    user = chat_service.get_user_from_chat(chat_id)
+    
+    if not user:
+        # Return progress indicating all BuyerInfo fields are missing
+        return BuyerProgress(
+            user_id="",
+            current_stage="initial",
+            missing_fields=["name"],
+            completion_percentage=0.0
+        )
+    
+    user_service = UserService()
+    return user_service.get_buyer_progress(user.id)
 
 
 @tool
