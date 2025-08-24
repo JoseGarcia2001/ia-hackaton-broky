@@ -106,7 +106,7 @@ def generate_qr(state: Annotated[dict, InjectedState]) -> Optional[QRResponse]:
     chat_service = ChatService()
     user_data = chat_service.get_user_from_chat(chat_id)
     property_id = chat_service.get_property_id_from_chat(chat_id)
-    phone_number = settings.WHATSAPP_NUMBER
+    phone_number = settings.INFOBIP_WHATSAPP_FROM
     property_service = PropertyService()
     property_obj = property_service.get_property_full_info(property_id)
     address = property_obj.address
