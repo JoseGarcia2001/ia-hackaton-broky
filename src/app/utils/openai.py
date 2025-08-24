@@ -132,7 +132,7 @@ class OpenIA:
                 response = self.openai_client.images.edit(
                     model="dall-e-2",
                     image=base_file,
-                    prompt="Reemplaza el código QR que está en el centro del rectángulo blanco con este nuevo código QR de WhatsApp. Mantén exactamente el mismo diseño, colores y estilo de la imagen original. El nuevo QR debe estar perfectamente centrado en el rectángulo blanco y debe verse natural e integrado con el diseño. Conserva todos los elementos visuales: el texto 'SE VENDE', el fondo morado, y las casitas en la parte inferior.",
+                    prompt="Reemplaza el código QR que está en el centro del rectángulo blanco con este nuevo código QR de WhatsApp. Mantén exactamente el mismo diseño, colores y estilo de la imagen original. El nuevo QR debe estar perfectamente centrado en el rectángulo blanco y debe verse natural e integrado con el diseño. Conserva todos los elementos visuales: el texto 'SE VENDE', el fondo morado, y las casitas en la parte inferior. Adicional no me cambies el contenido del QR, solo el código QR. Y respeta las dimensiones de la imagen original",
                     n=1,
                     size="1024x1024",
                     response_format="b64_json"
