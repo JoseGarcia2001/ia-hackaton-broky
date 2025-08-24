@@ -8,6 +8,7 @@ from langgraph.prebuilt import InjectedState
 from ....services.chat_service import ChatService
 from ....services.user_service import UserService, BuyerInfo, BuyerProgress
 from ....services.visit_service import VisitService, VisitInfo
+from ....services.property_service import PropertyService
 from ....models.user import AvailabilitySlot
 from ....models.visit import VisitStatus
 from ....utils.logger import logger
@@ -73,10 +74,17 @@ def get_seller_availability(state: Annotated[dict, InjectedState]) -> List[Avail
     try:
         # Get the property associated with the chat
         chat_service = ChatService()
-        property_obj = chat_service.get_property_from_buyer_chat_id(chat_id)
+        property_service = PropertyService()
+        
+        chat = chat_service.get_chat_by_id(chat_id)
+        if not chat or not chat.property_id:
+            logger.warning(f"No chat_id found for chat_id: {chat_id}")
+            return []
+        
+        property_obj = property_service.get_property_full_info(chat.property_id)
         
         if not property_obj:
-            logger.warning(f"No property found for chat_id: {chat_id}")
+            logger.warning(f"No property found for property_id: {chat.property_id}")
             return []
         
         # Get property availability through visit service
