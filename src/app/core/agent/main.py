@@ -98,6 +98,6 @@ class Agent(ABC):
 
         ai_messages = list(filter(lambda message: isinstance(message, AIMessage), response["messages"]))
 
-        message_response: AgentResponse = AgentResponse(type=MessageType.TEXT, message=ai_messages[-2].content)
+        message_response: AgentResponse = AgentResponse(type=MessageType.TEXT, message=ai_messages[-3].content)
 
         return message_response
